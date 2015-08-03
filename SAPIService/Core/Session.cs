@@ -21,10 +21,10 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Reset session expire date
         /// </summary>
-        /// <param name="hours"></param>
-        public void ResetExpireDate(int hours)
+        /// <param name="seconds"></param>
+        public void ResetExpireDate(int seconds)
         {
-            ExpireDate = DateTime.Now.AddHours(hours);
+            ExpireDate = DateTime.Now.AddSeconds(seconds);
         }
 
         /// <summary>

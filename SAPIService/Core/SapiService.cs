@@ -1,5 +1,6 @@
 ﻿using SiweiSoft.SAPIService.Helper;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 
@@ -16,7 +17,7 @@ namespace SiweiSoft.SAPIService.Core
         Stopped
     }
 
-    public class SapiService<TSession> where TSession : Session
+    public class SapiService<TSession> where TSession : Session, new()
     {
         #region private properties
 
@@ -36,9 +37,34 @@ namespace SiweiSoft.SAPIService.Core
         private int _port;
 
         /// <summary>
+        /// Cross origin host
+        /// </summary>
+        private string _originHost;
+
+        /// <summary>
+        /// File server path
+        /// </summary>
+        private string _fileServerPath;
+
+        /// <summary>
+        /// Cookie name
+        /// </summary>
+        private string _cookieName;
+
+        /// <summary>
+        /// Cookies expires time(seconds)
+        /// </summary>
+        private int _cookieExpires;
+
+        /// <summary>
         /// Default service name
         /// </summary>
         private const string defaultServiceName = "WebService";
+
+        /// <summary>
+        /// Default cookie expires(seconds)
+        /// </summary>
+        private const int defaultCookieExpires = 3600;
 
         #endregion private properties
 
@@ -64,6 +90,9 @@ namespace SiweiSoft.SAPIService.Core
             _ipAddress = "localhost";
             _port = 8885;
             _fullServiceName = "Web service(" + defaultServiceName + "," + _ipAddress + ":" + _port.ToString() + ")";
+            _originHost = null;
+            _cookieExpires = defaultCookieExpires;
+
             Status = ServiceStatus.NotInitialized;
         }
 
@@ -73,11 +102,21 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="ipAddress">IP address on local host</param>
         /// <param name="port">Available port on local host</param>
         /// <param name="serviceName">Service name</param>
-        public SapiService(string ipAddress, int port, string serviceName = defaultServiceName)
+        /// <param name="originHost">Cross origin host</param>
+        /// <param name="fileServerPath">File server path</param>
+        /// <param name="cookieName">Cookie name</param>
+        /// <param name="cookieExpires">Cookie expires</param>
+        public SapiService(string ipAddress, int port, string serviceName = defaultServiceName, string originHost = null,
+            string fileServerPath = null, string cookieName = null, int? cookieExpires = null)
         {
             _ipAddress = ipAddress;
             _port = port;
             _fullServiceName = "Web service(" + serviceName + "," + _ipAddress + ":" + _port.ToString() + ")";
+            _originHost = originHost;
+            _fileServerPath = fileServerPath;
+            _cookieName = cookieName;
+            _cookieExpires = cookieExpires ?? defaultCookieExpires;
+
             Status = ServiceStatus.NotInitialized;
         }
 
@@ -142,7 +181,10 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="context"></param>
         public void ConcreteProcess(object context)
         {
-            SapiRequest<TSession> request = new SapiRequest<TSession>((HttpListenerContext)context, null, null);
+            if (context != null)
+            {
+                //SapiRequest<TSession> request = new SapiRequest<TSession>((HttpListenerContext)context, null, null);
+            }
         }
 
         /// <summary>
