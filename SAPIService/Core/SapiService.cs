@@ -106,7 +106,7 @@ namespace SiweiSoft.SAPIService.Core
             catch (HttpListenerException ex)
             {
                 Status = ServiceStatus.NotInitialized;
-                Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message);
+                Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, _fullServiceName);
             }
         }
 
@@ -152,16 +152,7 @@ namespace SiweiSoft.SAPIService.Core
         {
             Status = ServiceStatus.Stopped;
             Listener.Stop();
-            Log.LogCommentM(CommentType.Warn, "{0}: service stoped.");
-        }
-
-        /// <summary>
-        /// Override ToString
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return _fullServiceName;
+            Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", _fullServiceName);
         }
     }
 }

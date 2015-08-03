@@ -1,5 +1,4 @@
-﻿using SiweiSoft.SAPIService.ControllerCore;
-using SiweiSoft.SAPIService.Core;
+﻿using SiweiSoft.SAPIService.Core;
 using SiweiSoft.SAPIService.Helper;
 using System;
 using System.Collections.Generic;
@@ -8,12 +7,12 @@ using System.Reflection;
 
 namespace SiweiSoft.SAPIService
 {
-    public class ResponseBodyContext<TSession> where TSession:Session
+    public class ResponseBodyContext<TSession> where TSession : Session
     {
         private Controller<TSession> controller;
         MethodInfo action = null;
 
-        static Dictionary<string, ControllerReflectionInfo> controllerInfoDictory;
+        public static Dictionary<string, ControllerReflectionInfo> controllerInfoDictory;
 
         /// <summary>
         /// 初始化静态变量controllerDictory

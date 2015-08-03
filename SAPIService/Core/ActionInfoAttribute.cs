@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SiweiSoft.SAPIService.ControllerCore
+namespace SiweiSoft.SAPIService.Core
 {
     /// <summary>
     /// Action特性

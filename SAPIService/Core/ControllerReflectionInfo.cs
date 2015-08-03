@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace SiweiSoft.SAPIService.ControllerCore
+namespace SiweiSoft.SAPIService.Core
 {
     public class ControllerReflectionInfo
     {

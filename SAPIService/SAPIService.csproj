@@ -40,9 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ControllerCore\ActionInfoAttribute.cs" />
-    <Compile Include="ControllerCore\Controller.cs" />
-    <Compile Include="ControllerCore\ControllerReflectionInfo.cs" />
+    <Compile Include="Core\ActionInfoAttribute.cs" />
+    <Compile Include="Core\Controller.cs" />
+    <Compile Include="Core\ControllerReflectionInfo.cs" />
     <Compile Include="Core\ActionResult.cs" />
     <Compile Include="Core\SapiRequest.cs" />
     <Compile Include="Core\SapiService.cs" />

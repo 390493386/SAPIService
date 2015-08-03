@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Web.Script.Serialization;
-
 namespace SiweiSoft.SAPIService.Core
 {
     public class SapiRequest<TSession> where TSession : Session
