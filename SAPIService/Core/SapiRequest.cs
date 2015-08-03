@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Web.Script.Serialization;
+
 namespace SiweiSoft.SAPIService.Core
 {
     public class SapiRequest<TSession> where TSession : Session, new()
@@ -54,8 +55,8 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="requestContext"></param>
         /// <param name="configuration"></param>
         /// <param name="session"></param>
-        public SapiRequest(HttpListenerContext requestContext, string cookieName, string originHost
-            , Dictionary<string, object> configuration)
+        public SapiRequest(HttpListenerContext requestContext, string cookieName, string originHost, 
+            Dictionary<string, object> configuration)
         {
             _context = requestContext;
             _cookieName = cookieName;
@@ -76,24 +77,26 @@ namespace SiweiSoft.SAPIService.Core
                     _context.Response.OutputStream.Close();
                     return;
                 }
-                Cookie cookie = _context.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
-                if (cookie == null)
+                if (!String.IsNullOrEmpty(_cookieName))
                 {
-                    session = this.GenerateNewSession();
-                }
-                else
-                {
-                    string cookieString = cookie.Value;
-                    if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
-                        session = SessionsDictionary[cookieString];
-                    else
+                    Cookie cookie = _context.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
+                    if (cookie == null)
+                    {
                         session = this.GenerateNewSession();
+                    }
+                    else
+                    {
+                        string cookieString = cookie.Value;
+                        if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
+                            session = SessionsDictionary[cookieString];
+                        else
+                            session = this.GenerateNewSession();
+                    }
                 }
 
                 _context.Response.Headers.Add("Access-Control-Allow-Credentials: true");
-                //For cross origin
                 _originHost = String.IsNullOrEmpty(_originHost) ? "*" : _originHost;
-                _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);
+                _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
                 try
                 {
                     ResponseGet();
@@ -109,8 +112,7 @@ namespace SiweiSoft.SAPIService.Core
 
         private void ResponseGet()
         {
-            ResponseBodyContext<TSession> responseContext = new ResponseBodyContext<TSession>(Config, _context, session);
-            ActionResult actionResult = responseContext.GetResponseBody();
+            ActionResult actionResult = GetResponse();
             if (actionResult == null)
             {
                 _context.Response.StatusCode = 404;
@@ -169,6 +171,12 @@ namespace SiweiSoft.SAPIService.Core
             session.ResetExpireDate(_cookieExpires);
             SessionsDictionary.Add(cookieString, session);
             return session;
+        }
+
+        private ActionResult GetResponse()
+        {
+            //SapiService<TSession>.
+            return null;
         }
     }
 }

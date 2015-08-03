@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 
 namespace SiweiSoft.SAPIService.Core
@@ -57,6 +58,11 @@ namespace SiweiSoft.SAPIService.Core
         private int _cookieExpires;
 
         /// <summary>
+        /// Controllers assembly(full name)
+        /// </summary>
+        private string _controllersAssembly;
+
+        /// <summary>
         /// Default service name
         /// </summary>
         private const string defaultServiceName = "WebService";
@@ -83,6 +89,11 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
+        /// Controllers informations
+        /// </summary>
+        public static Dictionary<string, ControllerReflectionInfo> ControllersInfos;
+
+        /// <summary>
         /// Constructor without arguement
         /// </summary>
         public SapiService()
@@ -106,8 +117,9 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="fileServerPath">File server path</param>
         /// <param name="cookieName">Cookie name</param>
         /// <param name="cookieExpires">Cookie expires</param>
+        /// <param name="controllersAssembly">Controllers assembly</param>
         public SapiService(string ipAddress, int port, string serviceName = defaultServiceName, string originHost = null,
-            string fileServerPath = null, string cookieName = null, int? cookieExpires = null)
+            string fileServerPath = null, string cookieName = null, int? cookieExpires = null, string controllersAssembly = null)
         {
             _ipAddress = ipAddress;
             _port = port;
@@ -116,6 +128,7 @@ namespace SiweiSoft.SAPIService.Core
             _fileServerPath = fileServerPath;
             _cookieName = cookieName;
             _cookieExpires = cookieExpires ?? defaultCookieExpires;
+            _controllersAssembly = controllersAssembly;
 
             Status = ServiceStatus.NotInitialized;
         }
@@ -140,6 +153,10 @@ namespace SiweiSoft.SAPIService.Core
             {
                 Listener.Start();
                 Status = ServiceStatus.Running;
+
+                Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", _fullServiceName);
+                var tt = Assembly.GetCallingAssembly();
+
                 Log.LogCommentM(CommentType.Info, "{0}: service started,waiting connection ...", _fullServiceName);
             }
             catch (HttpListenerException ex)
