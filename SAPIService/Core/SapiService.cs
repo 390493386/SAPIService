@@ -156,6 +156,22 @@ namespace SiweiSoft.SAPIService.Core
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", _fullServiceName);
                 Assembly assembly = String.IsNullOrEmpty(_controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(_controllersAssembly);
+                if (assembly != null)
+                {
+                    ControllersInfos = new Dictionary<string, ControllerReflectionInfo>();
+                    Type[] types = Assembly.GetExecutingAssembly().GetTypes();
+                    foreach (Type type in types)
+                    {
+                        if (type.Name.Length > 10 && type.Name.EndsWith("Controller"))
+                        {
+                            string key = type.Name.Replace("Controller", null).ToUpper();
+                            if (ControllersInfos.ContainsKey(key))
+                                Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}，可能引起冲突！", _fullServiceName, key);
+                            else
+                                ControllersInfos.Add(key, new ControllerReflectionInfo(type));
+                        }
+                    }
+                }
 
                 Log.LogCommentM(CommentType.Info, "{0}: service started,waiting connection ...", _fullServiceName);
             }
