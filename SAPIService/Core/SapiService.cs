@@ -155,7 +155,7 @@ namespace SiweiSoft.SAPIService.Core
                 Status = ServiceStatus.Running;
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", _fullServiceName);
-                var tt = Assembly.GetCallingAssembly();
+                Assembly assembly = String.IsNullOrEmpty(_controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(_controllersAssembly);
 
                 Log.LogCommentM(CommentType.Info, "{0}: service started,waiting connection ...", _fullServiceName);
             }
