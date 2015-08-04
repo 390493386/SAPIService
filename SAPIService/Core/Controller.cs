@@ -6,7 +6,7 @@ namespace SiweiSoft.SAPIService.Core
     public abstract class Controller: ICloneable
     {
         /// <summary>
-        /// 服务层传递给Controller层的参数
+        /// Paramenters
         /// </summary>
         public Dictionary<string, object> Parameters
         {
@@ -15,14 +15,13 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Current session
+        /// Get current session
         /// </summary>
-        public Session Session
+        /// <typeparam name="TSession"></typeparam>
+        /// <returns></returns>
+        public TSession GetSession<TSession>() where TSession : Session
         {
-            get
-            {
-                return Parameters.ContainsKey("Session") ? (Session)Parameters["Session"] : null;
-            }
+            return Parameters.ContainsKey("Session") ? (TSession)Parameters["Session"] : default(TSession);
         }
 
         object ICloneable.Clone()
