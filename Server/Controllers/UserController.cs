@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SiweiSoft.SAPIService.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,15 @@ using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
-    class UserController
+    public class UserController : Controller
     {
+        [ActionInfo("GET")]
+        public ActionResult Get()
+        {
+            ActionResult ar = new ActionResult();
+            ar.Result.Add("code", 200);
+
+            return ar;
+        }
     }
 }

@@ -94,6 +94,11 @@ namespace SiweiSoft.SAPIService.Core
         public static Dictionary<string, ControllerReflectionInfo> ControllersInfos;
 
         /// <summary>
+        /// Sessions dictionary
+        /// </summary>
+        public static Dictionary<string, TSession> SessionsDictionary;
+
+        /// <summary>
         /// Constructor without arguement
         /// </summary>
         public SapiService()
@@ -154,26 +159,29 @@ namespace SiweiSoft.SAPIService.Core
                 Listener.Start();
                 Status = ServiceStatus.Running;
 
+                Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", _fullServiceName);
+                SessionsDictionary = new Dictionary<string, TSession>();
+
                 Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", _fullServiceName);
                 Assembly assembly = String.IsNullOrEmpty(_controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(_controllersAssembly);
                 if (assembly != null)
                 {
                     ControllersInfos = new Dictionary<string, ControllerReflectionInfo>();
-                    Type[] types = Assembly.GetExecutingAssembly().GetTypes();
+                    Type[] types = assembly.GetTypes();
                     foreach (Type type in types)
                     {
                         if (type.Name.Length > 10 && type.Name.EndsWith("Controller"))
                         {
                             string key = type.Name.Replace("Controller", null).ToUpper();
                             if (ControllersInfos.ContainsKey(key))
-                                Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}，可能引起冲突！", _fullServiceName, key);
+                                Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}, may cause confliction！", _fullServiceName, key);
                             else
                                 ControllersInfos.Add(key, new ControllerReflectionInfo(type));
                         }
                     }
                 }
 
-                Log.LogCommentM(CommentType.Info, "{0}: service started,waiting connection ...", _fullServiceName);
+                Log.LogCommentM(CommentType.Info, "{0}: service started, waiting connection ...", _fullServiceName);
             }
             catch (HttpListenerException ex)
             {
@@ -212,11 +220,35 @@ namespace SiweiSoft.SAPIService.Core
         /// Concrete process
         /// </summary>
         /// <param name="context"></param>
-        public void ConcreteProcess(object context)
+        private void ConcreteProcess(object context)
         {
             if (context != null)
             {
-                //SapiRequest<TSession> request = new SapiRequest<TSession>((HttpListenerContext)context, null, null);
+                HttpListenerContext requestContext = (HttpListenerContext)context;
+                TSession session = null;
+                if (requestContext.Request.RawUrl == "/favicon.ico")//浏览器会发送获取图标的请求
+                {
+                    requestContext.Response.OutputStream.Close();
+                }
+                else if (!String.IsNullOrEmpty(_cookieName))
+                {
+                    Cookie cookie = requestContext.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
+                    if (cookie == null)
+                    {
+                        session = GenerateNewSession(requestContext);
+                    }
+                    else
+                    {
+                        string cookieString = cookie.Value;
+                        if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
+                            session = SessionsDictionary[cookieString];
+                        else
+                            session = this.GenerateNewSession(requestContext);
+                    }
+                }
+
+                SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos);
+                request.Response();
             }
         }
 
@@ -228,6 +260,27 @@ namespace SiweiSoft.SAPIService.Core
             Status = ServiceStatus.Stopped;
             Listener.Stop();
             Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", _fullServiceName);
+        }
+
+        /// <summary>
+        /// 生成一个新的Session
+        /// </summary>
+        /// <returns></returns>
+        private TSession GenerateNewSession(HttpListenerContext context)
+        {
+            string cookieString = Guid.NewGuid().ToString();
+            Cookie cookie = new Cookie(_cookieName, cookieString, "/")
+            {
+                Expires = DateTime.Now.AddSeconds(_cookieExpires)
+            };
+            context.Response.SetCookie(cookie);
+            TSession session = new TSession()
+            {
+                IsAuthorized = false
+            };
+            session.ResetExpireDate(_cookieExpires);
+            SessionsDictionary.Add(cookieString, session);
+            return session;
         }
     }
 }

@@ -7,18 +7,8 @@ using System.Web.Script.Serialization;
 
 namespace SiweiSoft.SAPIService.Core
 {
-    public class SapiRequest<TSession> where TSession : Session, new()
+    public class SapiRequest
     {
-        /// <summary>
-        /// Sessions dictionary
-        /// </summary>
-        private static Dictionary<string, TSession> SessionsDictionary;
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        //private ResponseBodyContext<TSession> responseContext;
-
         /// <summary>
         /// Http request
         /// </summary>
@@ -30,39 +20,36 @@ namespace SiweiSoft.SAPIService.Core
         private string _originHost;
 
         /// <summary>
-        /// Cookie name
-        /// </summary>
-        private string _cookieName;
-
-        /// <summary>
-        /// Cookie expires
-        /// </summary>
-        private int _cookieExpires;
-
-        /// <summary>
         /// Other configurations
         /// </summary>
-        public Dictionary<string, object> Config { get; set; }
+        private Dictionary<string, object> _config { get; set; }
 
         /// <summary>
         /// Current session
         /// </summary>
-        private TSession session { get; set; }
+        private Session _session { get; set; }
+
+        /// <summary>
+        /// Controllers informations
+        /// </summary>
+        private Dictionary<string, ControllerReflectionInfo> _controllersInfos;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="requestContext"></param>
-        /// <param name="configuration"></param>
         /// <param name="session"></param>
-        public SapiRequest(HttpListenerContext requestContext, string cookieName, string originHost, 
-            Dictionary<string, object> configuration)
+        /// <param name="config"></param>
+        /// <param name="originHost"></param>
+        public SapiRequest(HttpListenerContext requestContext, Session session, 
+            Dictionary<string, ControllerReflectionInfo> controllersInfos,
+            Dictionary<string, object> config = null, string originHost = null)
         {
             _context = requestContext;
-            _cookieName = cookieName;
-            Config = configuration;
-            if (SessionsDictionary == null)
-                SessionsDictionary = new Dictionary<string, TSession>();
+            _session = session;
+            _controllersInfos = controllersInfos;
+            _config = config;
+            _originHost = originHost;
         }
 
         /// <summary>
@@ -72,28 +59,6 @@ namespace SiweiSoft.SAPIService.Core
         {
             if (_context != null)
             {
-                if (_context.Request.RawUrl == "/favicon.ico")//浏览器会发送获取图标的请求
-                {
-                    _context.Response.OutputStream.Close();
-                    return;
-                }
-                if (!String.IsNullOrEmpty(_cookieName))
-                {
-                    Cookie cookie = _context.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
-                    if (cookie == null)
-                    {
-                        session = this.GenerateNewSession();
-                    }
-                    else
-                    {
-                        string cookieString = cookie.Value;
-                        if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
-                            session = SessionsDictionary[cookieString];
-                        else
-                            session = this.GenerateNewSession();
-                    }
-                }
-
                 _context.Response.Headers.Add("Access-Control-Allow-Credentials: true");
                 _originHost = String.IsNullOrEmpty(_originHost) ? "*" : _originHost;
                 _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
@@ -152,31 +117,13 @@ namespace SiweiSoft.SAPIService.Core
             _context.Response.OutputStream.Close();
         }
 
-        /// <summary>
-        /// 生成一个新的Session
-        /// </summary>
-        /// <returns></returns>
-        public TSession GenerateNewSession()
-        {
-            string cookieString = Guid.NewGuid().ToString();
-            Cookie cookie = new Cookie(_cookieName, cookieString, "/")
-            {
-                Expires = DateTime.Now.AddSeconds(_cookieExpires)
-            };
-            _context.Response.SetCookie(cookie);
-            TSession session = new TSession()
-            {
-                IsAuthorized = false
-            };
-            session.ResetExpireDate(_cookieExpires);
-            SessionsDictionary.Add(cookieString, session);
-            return session;
-        }
-
         private ActionResult GetResponse()
         {
-            //SapiService<TSession>.
-            return null;
+            ControllerReflectionInfo controllerInfo = _controllersInfos.ContainsKey("USER") ? _controllersInfos["USER"] : null;
+            var action = controllerInfo.GetMethodInfoByAlias("GET");
+            var controller = (Controller)controllerInfo.ControllerType.Assembly.CreateInstance(controllerInfo.ControllerType.FullName);
+            return (ActionResult)action.Invoke(controller, null);
+            //return null;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace SiweiSoft.SAPIService.Core
 {
-    public abstract class Controller<TSession> where TSession : Session
+    public abstract class Controller
     {
         /// <summary>
         /// 服务层传递给Controller层的参数
@@ -13,11 +13,11 @@ namespace SiweiSoft.SAPIService.Core
             set;
         }
 
-        public TSession Session
+        public Session Session
         {
             get
             {
-                return Parameters.ContainsKey("Session") ? (TSession)Parameters["Session"] : null;
+                return Parameters.ContainsKey("Session") ? (Session)Parameters["Session"] : null;
             }
         }
     }

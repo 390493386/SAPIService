@@ -26,6 +26,7 @@ namespace SiweiSoft.SAPIService.Core
         public ActionResult()
         {
             Headers = new List<string>();
+            Result = new Dictionary<string, object>();
         }
     }
 }
