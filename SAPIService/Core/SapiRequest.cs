@@ -121,8 +121,9 @@ namespace SiweiSoft.SAPIService.Core
         {
             ControllerReflectionInfo controllerInfo = _controllersInfos.ContainsKey("USER") ? _controllersInfos["USER"] : null;
             var action = controllerInfo.GetMethodInfoByAlias("GET");
-            var controller = (Controller)controllerInfo.ControllerType.Assembly.CreateInstance(controllerInfo.ControllerType.FullName);
-            return (ActionResult)action.Invoke(controller, null);
+            var controller = ((Controller)controllerInfo.ControllerInstance).Clone();
+            controller.Parameters = new Dictionary<string, object>();
+            return (ActionResult)action.Invoke(controllerInfo.ControllerInstance, null);
             //return null;
         }
     }

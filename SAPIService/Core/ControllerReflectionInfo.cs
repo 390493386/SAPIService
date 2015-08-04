@@ -7,9 +7,9 @@ namespace SiweiSoft.SAPIService.Core
     public class ControllerReflectionInfo
     {
         /// <summary>
-        /// Controller对应的Type
+        /// Controller instance
         /// </summary>
-        public Type ControllerType { get; set; }
+        public Object ControllerInstance { get; set; }
 
         /// <summary>
         /// Controller中方法和别名对应
@@ -22,12 +22,11 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="controllerType"></param>
         public ControllerReflectionInfo(Type controllerType)
         {
-            ControllerType = controllerType;
-            if (ControllerType != null)
+            if (controllerType != null)
             {
+                ControllerInstance = controllerType.Assembly.CreateInstance(controllerType.FullName);
                 Actions = new Dictionary<string, MethodInfo>();
-
-                MethodInfo[] actions = ControllerType.GetMethods();
+                MethodInfo[] actions = controllerType.GetMethods();
                 foreach (MethodInfo action in actions)
                 {
                     ActionInfoAttribute actionAttribute = action.GetCustomAttribute<ActionInfoAttribute>();
