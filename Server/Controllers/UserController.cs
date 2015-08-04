@@ -15,6 +15,9 @@ namespace Server.Controllers
             ActionResult ar = new ActionResult();
             ar.Result.Add("code", 200);
 
+            Session se = GetSession<Session>();
+            Se
+
             return ar;
         }
     }
