@@ -2,6 +2,9 @@
 
 namespace SiweiSoft.SAPIService.Core
 {
+    /// <summary>
+    /// For user session
+    /// </summary>
     public class Session
     {
         /// <summary>
@@ -10,7 +13,7 @@ namespace SiweiSoft.SAPIService.Core
         private DateTime ExpireDate;
 
         /// <summary>
-        /// 是否经过认证
+        /// Is authorized
         /// </summary>
         public bool IsAuthorized
         {

@@ -82,11 +82,7 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Http listener
         /// </summary>
-        private HttpListener Listener
-        {
-            get;
-            set;
-        }
+        private HttpListener Listener { get; set; }
 
         /// <summary>
         /// Controllers informations
@@ -245,10 +241,9 @@ namespace SiweiSoft.SAPIService.Core
                         else
                             session = this.GenerateNewSession(requestContext);
                     }
+                    SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos);
+                    request.Response();
                 }
-
-                SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos);
-                request.Response();
             }
         }
 
@@ -263,7 +258,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// 生成一个新的Session
+        /// Generate a new session
         /// </summary>
         /// <returns></returns>
         private TSession GenerateNewSession(HttpListenerContext context)
