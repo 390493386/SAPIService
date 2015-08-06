@@ -7,8 +7,8 @@
     <ProjectGuid>{52D2E507-13F3-4A4F-9D0C-B030B591B58F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ChuanchengSoft.SAPIService</RootNamespace>
-    <AssemblyName>ChuanchengSoft.SAPIService</AssemblyName>
+    <RootNamespace>SiweiSoft.SAPIService</RootNamespace>
+    <AssemblyName>SiweiSoft.SAPIService</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ActionInfo.cs" />
     <Compile Include="Core\ActionInfoAttribute.cs" />
     <Compile Include="Core\Controller.cs" />
     <Compile Include="Core\ControllerReflectionInfo.cs" />

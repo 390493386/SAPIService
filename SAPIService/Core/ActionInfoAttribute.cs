@@ -23,7 +23,7 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         /// <param name="alias">Alias</param>
         /// <param name="needAuthorize">Need authorize</param>
-        public ActionInfoAttribute(string alias,bool needAuthorize = true)
+        public ActionInfoAttribute(string alias, bool needAuthorize = true)
         {
             Alias = alias;
             NeedAuthorize = needAuthorize;

@@ -38,6 +38,11 @@ namespace SiweiSoft.SAPIService.Core
         private int _port;
 
         /// <summary>
+        /// Root path of server, for different site
+        /// </summary>
+        private string _rootPath;
+
+        /// <summary>
         /// Cross origin host
         /// </summary>
         private string _originHost;
@@ -113,17 +118,21 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         /// <param name="ipAddress">IP address on local host</param>
         /// <param name="port">Available port on local host</param>
+        /// <param name="rootPath">Root path, for different web root path</param>
         /// <param name="serviceName">Service name</param>
         /// <param name="originHost">Cross origin host</param>
         /// <param name="fileServerPath">File server path</param>
         /// <param name="cookieName">Cookie name</param>
         /// <param name="cookieExpires">Cookie expires</param>
         /// <param name="controllersAssembly">Controllers assembly</param>
-        public SapiService(string ipAddress, int port, string serviceName = defaultServiceName, string originHost = null,
-            string fileServerPath = null, string cookieName = null, int? cookieExpires = null, string controllersAssembly = null)
+        public SapiService(string ipAddress, int port, string rootPath = null,
+            string serviceName = defaultServiceName, string originHost = null,
+            string fileServerPath = null, string cookieName = null,
+            int? cookieExpires = null, string controllersAssembly = null)
         {
             _ipAddress = ipAddress;
             _port = port;
+            _rootPath = rootPath;
             _fullServiceName = "Web service(" + serviceName + "," + _ipAddress + ":" + _port.ToString() + ")";
             _originHost = originHost;
             _fileServerPath = fileServerPath;

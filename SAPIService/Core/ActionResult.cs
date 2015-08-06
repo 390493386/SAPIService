@@ -29,4 +29,14 @@ namespace SiweiSoft.SAPIService.Core
             Result = new Dictionary<string, object>();
         }
     }
+
+    public class ActionNotAuthorized : ActionResult
+    {
+        public ActionNotAuthorized()
+        {
+            Result = new Dictionary<string, object>();
+            Result.Add("code", -1);
+            Result.Add("message", "Request not authorized.");
+        }
+    }
 }

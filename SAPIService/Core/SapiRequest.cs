@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Web.Script.Serialization;
 
@@ -119,12 +120,49 @@ namespace SiweiSoft.SAPIService.Core
 
         private ActionResult GetResponse()
         {
-            ControllerReflectionInfo controllerInfo = _controllersInfos.ContainsKey("USER") ? _controllersInfos["USER"] : null;
-            var action = controllerInfo.GetMethodInfoByAlias("GET");
-            var controller = ((Controller)controllerInfo.ControllerInstance).Clone();
-            controller.Parameters = new Dictionary<string, object>();
-            return (ActionResult)action.Invoke(controllerInfo.ControllerInstance, null);
-            //return null;
+            ActionResult actionResult = null;
+
+            ActionInfo actionInfo;
+            Controller controllerInstance = InitializeControllerInstance(out actionInfo);
+            if (controllerInstance == null || actionInfo == null)
+                Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+            else
+            {
+                if (!_session.IsAuthorized && actionInfo.NeedAuthorize)
+                    actionResult = new ActionNotAuthorized();
+                else
+                    actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
+            }
+            return actionResult;
+        }
+
+        /// <summary>
+        /// Initialize controller instance
+        /// </summary>
+        /// <param name="actionInfo">Action info</param>
+        /// <returns></returns>
+        private Controller InitializeControllerInstance(out ActionInfo actionInfo)
+        {
+            Controller controller = null;
+            actionInfo = null;
+
+            //Get root name, controller name, and action name from request
+            string[] urlParts = (_context.Request.RawUrl.Split('?'))[0].Split('/');
+            if (urlParts.Length == 4 && urlParts[1] == "SAPI")
+            {
+                string controllerName = urlParts[2];
+                string actionName = urlParts[3];
+
+                ControllerReflectionInfo controllerInfo = _controllersInfos.ContainsKey(controllerName) ? _controllersInfos[controllerName] : null;
+                if (controllerInfo != null)
+                {
+                    actionInfo = controllerInfo != null ? controllerInfo.GetMethodInfoByAlias(actionName) : null;
+                    controller = ((Controller)controllerInfo.ControllerInstance).Clone();
+                }
+            }
+            else
+                Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+            return controller;
         }
     }
 }

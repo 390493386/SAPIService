@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SiweiSoft.SAPIService.Helper;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -14,7 +15,7 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Controller中方法和别名对应
         /// </summary>
-        private Dictionary<string, MethodInfo> Actions;
+        private Dictionary<string, ActionInfo> Actions;
 
         /// <summary>
         /// 初始化Action别名和方法的对应表
@@ -25,13 +26,18 @@ namespace SiweiSoft.SAPIService.Core
             if (controllerType != null)
             {
                 ControllerInstance = controllerType.Assembly.CreateInstance(controllerType.FullName);
-                Actions = new Dictionary<string, MethodInfo>();
+                Actions = new Dictionary<string, ActionInfo>();
                 MethodInfo[] actions = controllerType.GetMethods();
                 foreach (MethodInfo action in actions)
                 {
                     ActionInfoAttribute actionAttribute = action.GetCustomAttribute<ActionInfoAttribute>();
-                    if (actionAttribute != null && !String.IsNullOrEmpty(actionAttribute.Alias) && !Actions.ContainsKey(actionAttribute.Alias))
-                        Actions.Add(actionAttribute.Alias, action);
+                    if (actionAttribute != null)
+                    {
+                        if (!Actions.ContainsKey(actionAttribute.Alias))
+                            Actions.Add(actionAttribute.Alias, new ActionInfo(action, actionAttribute.NeedAuthorize));
+                        else
+                            Log.LogCommentC(CommentType.Warn, "There exist action alias with ths same name.");
+                    }
                 }
             }
         }
@@ -41,16 +47,16 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         /// <param name="alias"></param>
         /// <returns></returns>
-        public MethodInfo GetMethodInfoByAlias(string alias)
+        public ActionInfo GetMethodInfoByAlias(string alias)
         {
-            MethodInfo action = null;
+            ActionInfo actionInfo = null;
 
             if (Actions != null)
             {
-                action = Actions.ContainsKey(alias) ? Actions[alias] : null;
+                actionInfo = Actions.ContainsKey(alias) ? Actions[alias] : null;
             }
 
-            return action;
+            return actionInfo;
         }
     }
 }
