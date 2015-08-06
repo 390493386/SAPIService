@@ -9,7 +9,7 @@ namespace Server.Controllers
 {
     public class UserController : Controller
     {
-        [ActionInfo("GET")]
+        [Action("GET")]
         public ActionResult Get()
         {
             ActionResult ar = new ActionResult();

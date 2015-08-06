@@ -30,7 +30,7 @@ namespace SiweiSoft.SAPIService.Core
                 MethodInfo[] actions = controllerType.GetMethods();
                 foreach (MethodInfo action in actions)
                 {
-                    ActionInfoAttribute actionAttribute = action.GetCustomAttribute<ActionInfoAttribute>();
+                    ActionAttribute actionAttribute = action.GetCustomAttribute<ActionAttribute>();
                     if (actionAttribute != null)
                     {
                         if (!Actions.ContainsKey(actionAttribute.Alias))

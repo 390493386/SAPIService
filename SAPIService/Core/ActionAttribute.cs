@@ -6,7 +6,7 @@ namespace SiweiSoft.SAPIService.Core
     /// Action attribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class ActionInfoAttribute : Attribute
+    public class ActionAttribute : Attribute
     {
         /// <summary>
         /// Action alias
@@ -23,7 +23,7 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         /// <param name="alias">Alias</param>
         /// <param name="needAuthorize">Need authorize</param>
-        public ActionInfoAttribute(string alias, bool needAuthorize = true)
+        public ActionAttribute(string alias, bool needAuthorize = true)
         {
             Alias = alias;
             NeedAuthorize = needAuthorize;

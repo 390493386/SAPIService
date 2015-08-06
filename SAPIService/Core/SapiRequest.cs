@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Web.Script.Serialization;
 
@@ -65,57 +64,67 @@ namespace SiweiSoft.SAPIService.Core
                 _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
                 try
                 {
-                    ResponseGet();
+                    ActionResult actionResult = null;
+
+                    string requestMethod = _context.Request.HttpMethod.ToUpper();
+                    if (requestMethod == "GET")
+                        ResponseGet();
+                    else if (requestMethod == "POST")
+                        ResponseGet();
+
+                    if (actionResult == null)
+                    {
+                        _context.Response.StatusCode = 404;
+                    }
+                    else
+                    {
+                        if (actionResult.Headers != null)  //添加请求的头部
+                        {
+                            foreach (string head in actionResult.Headers)
+                            {
+                                _context.Response.Headers.Add(head);
+                            }
+                        }
+                        if (actionResult.FileStream != null)  //下载文件请求
+                        {
+                            int receivedLength = 0;
+                            byte[] buffer = new byte[10240];
+                            do
+                            {
+                                receivedLength = actionResult.FileStream.Read(buffer, 0, buffer.Length);
+                                _context.Response.OutputStream.Write(buffer, 0, receivedLength);
+                            }
+                            while (receivedLength > 0);
+                            actionResult.FileStream.Flush();
+                            actionResult.FileStream.Close();
+                            _context.Response.StatusCode = 200;
+                        }
+                        else if (actionResult.Result != null)  //数据请求
+                        {
+                            byte[] buffer = Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(actionResult.Result));
+                            _context.Response.ContentLength64 = buffer.Length;
+                            _context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                            _context.Response.StatusCode = 200;
+                        }
+
+                    }
                 }
                 catch (Exception ex)
                 {
                     _context.Response.StatusCode = 500;
-                    _context.Response.Close();
                     Log.LogCommentC(CommentType.Error, "Unknow exception: " + ex.Message);
+                }
+                finally
+                {
+                    _context.Response.Close();
                 }
             }
         }
 
-        private void ResponseGet()
+        private ActionResult ResponseGet()
         {
             ActionResult actionResult = GetResponse();
-            if (actionResult == null)
-            {
-                _context.Response.StatusCode = 404;
-            }
-            else
-            {
-                if (actionResult.Headers != null)  //添加请求的头部
-                {
-                    foreach (string head in actionResult.Headers)
-                    {
-                        _context.Response.Headers.Add(head);
-                    }
-                }
-                if (actionResult.FileStream != null)  //下载文件请求
-                {
-                    int receivedLength = 0;
-                    byte[] buffer = new byte[10240];
-                    do
-                    {
-                        receivedLength = actionResult.FileStream.Read(buffer, 0, buffer.Length);
-                        _context.Response.OutputStream.Write(buffer, 0, receivedLength);
-                    }
-                    while (receivedLength > 0);
-                    actionResult.FileStream.Flush();
-                    actionResult.FileStream.Close();
-                    _context.Response.StatusCode = 200;
-                }
-                else if (actionResult.Result != null)  //数据请求
-                {
-                    byte[] buffer = Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(actionResult.Result));
-                    _context.Response.ContentLength64 = buffer.Length;
-                    _context.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                    _context.Response.StatusCode = 200;
-                }
-
-            }
-            _context.Response.OutputStream.Close();
+            return actionResult;
         }
 
         private ActionResult GetResponse()
