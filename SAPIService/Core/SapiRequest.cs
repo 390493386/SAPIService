@@ -64,11 +64,27 @@ namespace SiweiSoft.SAPIService.Core
                 _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
                 try
                 {
-                    ActionResult actionResult = null;
+                    Dictionary<string, object> parameters = new Dictionary<string, object>(); //TODO: 从service层传递
 
-                    Dictionary<string, object> parameters = new Dictionary<string, object>();
+                    //Get request parameters
                     GetRequestParameters(ref parameters);
 
+                    ActionResult actionResult = null;
+
+                    //Initialize controller instance and get action information
+                    ActionInfo actionInfo = null;
+                    Controller controllerInstance = InitializeControllerInstance(out actionInfo);
+                    if (controllerInstance == null || actionInfo == null)
+                        Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+                    else
+                    {
+                        if (!_session.IsAuthorized && actionInfo.NeedAuthorize)
+                            actionResult = new ActionNotAuthorized();
+                        else
+                            actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
+                    }
+
+                    //Response
                     if (actionResult == null)
                     {
                         _context.Response.StatusCode = 404;
@@ -118,20 +134,38 @@ namespace SiweiSoft.SAPIService.Core
             }
         }
 
-        private void GetRequestParameters(ref Dictionary<string,object> parameters)
+        private void GetRequestParameters(ref Dictionary<string, object> parameters)
         {
             parameters = parameters ?? new Dictionary<string, object>();
 
             string requestMethod = _context.Request.HttpMethod.ToUpper();
-            if (requestMethod == "GET")
+
+            var urlParts = _context.Request.RawUrl.Split('?');
+            if (urlParts.Length > 1)
+                GetURLParameters(ref parameters, urlParts[1]);
+
+            if (requestMethod == "POST" && _context.Request.InputStream.CanRead)
             {
-                var urlParts = _context.Request.RawUrl.Split('?');
-                if (urlParts.Length > 1)
-                    GetURLParameters(ref parameters, urlParts[1]);
-            }
-            else if (requestMethod == "POST")
-            {
-                ResponseGet();
+                string postData = null;
+                byte[] buffer = new byte[4096];
+                int length = 0;
+                do
+                {
+                    length = _context.Request.InputStream.Read(buffer, 0, buffer.Length);
+                    postData += Encoding.UTF8.GetString(buffer, 0, length);
+                }
+                while (length > 0);
+
+                if (postData.StartsWith("{"))
+                {
+                    Dictionary<string, object> param = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(postData);
+                    foreach (var p in param)
+                    {
+                        parameters.Add(p.Key, p.Value);
+                    }
+                }
+                else
+                    GetURLParameters(ref parameters, postData);
             }
         }
 
@@ -147,30 +181,6 @@ namespace SiweiSoft.SAPIService.Core
                         parameters.Add(keyValue[0], keyValue[1]);
                 }
             }
-        }
-
-        private ActionResult ResponseGet()
-        {
-            ActionResult actionResult = GetResponse();
-            return actionResult;
-        }
-
-        private ActionResult GetResponse()
-        {
-            ActionResult actionResult = null;
-
-            ActionInfo actionInfo;
-            Controller controllerInstance = InitializeControllerInstance(out actionInfo);
-            if (controllerInstance == null || actionInfo == null)
-                Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
-            else
-            {
-                if (!_session.IsAuthorized && actionInfo.NeedAuthorize)
-                    actionResult = new ActionNotAuthorized();
-                else
-                    actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
-            }
-            return actionResult;
         }
 
         /// <summary>
