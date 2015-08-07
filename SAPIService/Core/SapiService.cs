@@ -230,25 +230,29 @@ namespace SiweiSoft.SAPIService.Core
             if (context != null)
             {
                 HttpListenerContext requestContext = (HttpListenerContext)context;
-                TSession session = null;
+
                 if (requestContext.Request.RawUrl == "/favicon.ico")//浏览器会发送获取图标的请求
                 {
                     requestContext.Response.OutputStream.Close();
                 }
-                else if (!String.IsNullOrEmpty(_cookieName))
+                else
                 {
-                    Cookie cookie = requestContext.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
-                    if (cookie == null)
+                    TSession session = null;
+                    if (!String.IsNullOrEmpty(_cookieName))
                     {
-                        session = GenerateNewSession(requestContext);
-                    }
-                    else
-                    {
-                        string cookieString = cookie.Value;
-                        if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
-                            session = SessionsDictionary[cookieString];
+                        Cookie cookie = requestContext.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
+                        if (cookie == null)
+                        {
+                            session = GenerateNewSession(requestContext);
+                        }
                         else
-                            session = this.GenerateNewSession(requestContext);
+                        {
+                            string cookieString = cookie.Value;
+                            if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
+                                session = SessionsDictionary[cookieString];
+                            else
+                                session = this.GenerateNewSession(requestContext);
+                        }
                     }
                     SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos);
                     request.Response();

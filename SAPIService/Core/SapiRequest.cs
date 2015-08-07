@@ -66,11 +66,8 @@ namespace SiweiSoft.SAPIService.Core
                 {
                     ActionResult actionResult = null;
 
-                    string requestMethod = _context.Request.HttpMethod.ToUpper();
-                    if (requestMethod == "GET")
-                        ResponseGet();
-                    else if (requestMethod == "POST")
-                        ResponseGet();
+                    Dictionary<string, object> parameters = new Dictionary<string, object>();
+                    GetRequestParameters(ref parameters);
 
                     if (actionResult == null)
                     {
@@ -117,6 +114,37 @@ namespace SiweiSoft.SAPIService.Core
                 finally
                 {
                     _context.Response.Close();
+                }
+            }
+        }
+
+        private void GetRequestParameters(ref Dictionary<string,object> parameters)
+        {
+            parameters = parameters ?? new Dictionary<string, object>();
+
+            string requestMethod = _context.Request.HttpMethod.ToUpper();
+            if (requestMethod == "GET")
+            {
+                var urlParts = _context.Request.RawUrl.Split('?');
+                if (urlParts.Length > 1)
+                    GetURLParameters(ref parameters, urlParts[1]);
+            }
+            else if (requestMethod == "POST")
+            {
+                ResponseGet();
+            }
+        }
+
+        private void GetURLParameters(ref Dictionary<string, object> parameters, string queryString)
+        {
+            if (!String.IsNullOrEmpty(queryString))
+            {
+                string[] paramsPart = queryString.Trim('&').Split('&');
+                foreach (string paramPart in paramsPart)
+                {
+                    string[] keyValue = paramPart.Split('=');
+                    if (keyValue.Length == 2)
+                        parameters.Add(keyValue[0], keyValue[1]);
                 }
             }
         }
