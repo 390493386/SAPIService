@@ -67,6 +67,8 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         private string _controllersAssembly;
 
+
+
         /// <summary>
         /// Default service name
         /// </summary>
@@ -128,7 +130,8 @@ namespace SiweiSoft.SAPIService.Core
         public SapiService(string ipAddress, int port, string rootPath = null,
             string serviceName = defaultServiceName, string originHost = null,
             string fileServerPath = null, string cookieName = null,
-            int? cookieExpires = null, string controllersAssembly = null)
+            int? cookieExpires = null, string controllersAssembly = null,
+            Dictionary<string, object> serverParameters = null)
         {
             _ipAddress = ipAddress;
             _port = port;
