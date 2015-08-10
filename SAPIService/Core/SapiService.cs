@@ -67,7 +67,20 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         private string _controllersAssembly;
 
+        /// <summary>
+        /// Http listener
+        /// </summary>
+        private HttpListener listener;
 
+        /// <summary>
+        /// Controllers informations
+        /// </summary>
+        private Dictionary<string, ControllerReflectionInfo> ControllersInfos;
+
+        /// <summary>
+        /// Sessions dictionary
+        /// </summary>
+        private Dictionary<string, TSession> SessionsDictionary;
 
         /// <summary>
         /// Default service name
@@ -87,21 +100,6 @@ namespace SiweiSoft.SAPIService.Core
         public ServiceStatus Status { get; set; }
 
         /// <summary>
-        /// Http listener
-        /// </summary>
-        private HttpListener Listener { get; set; }
-
-        /// <summary>
-        /// Controllers informations
-        /// </summary>
-        public static Dictionary<string, ControllerReflectionInfo> ControllersInfos;
-
-        /// <summary>
-        /// Sessions dictionary
-        /// </summary>
-        public static Dictionary<string, TSession> SessionsDictionary;
-
-        /// <summary>
         /// Constructor without arguement
         /// </summary>
         public SapiService()
@@ -109,7 +107,7 @@ namespace SiweiSoft.SAPIService.Core
             _ipAddress = "localhost";
             _port = 8885;
             _fullServiceName = "Web service(" + defaultServiceName + "," + _ipAddress + ":" + _port.ToString() + ")";
-            _originHost = null;
+            _originHost = "*";
             _cookieExpires = defaultCookieExpires;
 
             Status = ServiceStatus.NotInitialized;
@@ -128,7 +126,7 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="cookieExpires">Cookie expires</param>
         /// <param name="controllersAssembly">Controllers assembly</param>
         public SapiService(string ipAddress, int port, string rootPath = null,
-            string serviceName = defaultServiceName, string originHost = null,
+            string serviceName = defaultServiceName, string originHost = "*",
             string fileServerPath = null, string cookieName = null,
             int? cookieExpires = null, string controllersAssembly = null,
             Dictionary<string, object> serverParameters = null)
@@ -157,14 +155,14 @@ namespace SiweiSoft.SAPIService.Core
                 return;
             }
             Log.LogCommentM(CommentType.Info, "{0}: Initializing service ...", _fullServiceName);
-            Listener = new HttpListener();
-            Listener.Prefixes.Add(string.Format("http://{0}:{1}/", _ipAddress, _port.ToString()));
+            listener = new HttpListener();
+            listener.Prefixes.Add(string.Format("http://{0}:{1}/", _ipAddress, _port.ToString()));
             Status = ServiceStatus.Ready;
             Log.LogCommentM(CommentType.Info, "{0}: Service binded to ip:{1} and port{2}.", _fullServiceName, _ipAddress, _port.ToString());
 
             try
             {
-                Listener.Start();
+                listener.Start();
                 Status = ServiceStatus.Running;
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", _fullServiceName);
@@ -193,6 +191,7 @@ namespace SiweiSoft.SAPIService.Core
             }
             catch (HttpListenerException ex)
             {
+                listener.Stop();
                 Status = ServiceStatus.NotInitialized;
                 Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, _fullServiceName);
             }
@@ -209,7 +208,7 @@ namespace SiweiSoft.SAPIService.Core
                 {
                     try
                     {
-                        HttpListenerContext context = Listener.GetContext();
+                        HttpListenerContext context = listener.GetContext();
                         ThreadPool.QueueUserWorkItem(new WaitCallback(this.ConcreteProcess), context);
                     }
                     catch (HttpListenerException)
@@ -234,8 +233,9 @@ namespace SiweiSoft.SAPIService.Core
             {
                 HttpListenerContext requestContext = (HttpListenerContext)context;
 
-                if (requestContext.Request.RawUrl == "/favicon.ico")//浏览器会发送获取图标的请求
+                if (requestContext.Request.RawUrl == "/favicon.ico")//Request for the icon
                 {
+                    //TODO: handle the request for the icon
                     requestContext.Response.OutputStream.Close();
                 }
                 else
@@ -243,7 +243,8 @@ namespace SiweiSoft.SAPIService.Core
                     TSession session = null;
                     if (!String.IsNullOrEmpty(_cookieName))
                     {
-                        Cookie cookie = requestContext.Request.Cookies[_cookieName]; //获取用户请求中的cookie信息
+                        //Get the cookie from the request
+                        Cookie cookie = requestContext.Request.Cookies[_cookieName];
                         if (cookie == null)
                         {
                             session = GenerateNewSession(requestContext);
@@ -251,13 +252,13 @@ namespace SiweiSoft.SAPIService.Core
                         else
                         {
                             string cookieString = cookie.Value;
-                            if (!String.IsNullOrEmpty(cookieString) && SessionsDictionary.ContainsKey(cookieString))
+                            if (SessionsDictionary.ContainsKey(cookieString))
                                 session = SessionsDictionary[cookieString];
                             else
-                                session = this.GenerateNewSession(requestContext);
+                                session = this.GenerateNewSession(requestContext, expires: cookie.Expires);
                         }
                     }
-                    SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos);
+                    SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos, _originHost);
                     request.Response();
                 }
             }
@@ -269,7 +270,7 @@ namespace SiweiSoft.SAPIService.Core
         public void Stop()
         {
             Status = ServiceStatus.Stopped;
-            Listener.Stop();
+            listener.Stop();
             Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", _fullServiceName);
         }
 
@@ -277,12 +278,12 @@ namespace SiweiSoft.SAPIService.Core
         /// Generate a new session
         /// </summary>
         /// <returns></returns>
-        private TSession GenerateNewSession(HttpListenerContext context)
+        private TSession GenerateNewSession(HttpListenerContext context, DateTime? expires = null)
         {
             string cookieString = Guid.NewGuid().ToString();
             Cookie cookie = new Cookie(_cookieName, cookieString, "/")
             {
-                Expires = DateTime.Now.AddSeconds(_cookieExpires)
+                Expires = expires ?? DateTime.Now.AddSeconds(_cookieExpires)
             };
             context.Response.SetCookie(cookie);
             TSession session = new TSession()
