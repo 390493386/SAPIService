@@ -10,7 +10,7 @@ namespace SiweiSoft.SAPIService.Core
     /// <summary>
     /// Service status
     /// </summary>
-    public enum ServiceStatus
+    public enum Status
     {
         NotInitialized,
         Ready,
@@ -73,6 +73,11 @@ namespace SiweiSoft.SAPIService.Core
         private HttpListener listener;
 
         /// <summary>
+        /// Server configurations
+        /// </summary>
+        private Dictionary<string, object> _serverConfig;
+
+        /// <summary>
         /// Controllers informations
         /// </summary>
         private Dictionary<string, ControllerReflectionInfo> ControllersInfos;
@@ -97,7 +102,7 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Service status
         /// </summary>
-        public ServiceStatus Status { get; set; }
+        public Status Status { get; private set; }
 
         /// <summary>
         /// Constructor without arguement
@@ -110,7 +115,7 @@ namespace SiweiSoft.SAPIService.Core
             _originHost = "*";
             _cookieExpires = defaultCookieExpires;
 
-            Status = ServiceStatus.NotInitialized;
+            Status = Status.NotInitialized;
         }
 
         /// <summary>
@@ -125,11 +130,12 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="cookieName">Cookie name</param>
         /// <param name="cookieExpires">Cookie expires</param>
         /// <param name="controllersAssembly">Controllers assembly</param>
+        /// <param name="serverConfig">Server configurations</param>
         public SapiService(string ipAddress, int port, string rootPath = null,
             string serviceName = defaultServiceName, string originHost = "*",
             string fileServerPath = null, string cookieName = null,
             int? cookieExpires = null, string controllersAssembly = null,
-            Dictionary<string, object> serverParameters = null)
+            Dictionary<string, object> serverConfig = null)
         {
             _ipAddress = ipAddress;
             _port = port;
@@ -140,8 +146,9 @@ namespace SiweiSoft.SAPIService.Core
             _cookieName = cookieName;
             _cookieExpires = cookieExpires ?? defaultCookieExpires;
             _controllersAssembly = controllersAssembly;
+            _serverConfig = serverConfig;
 
-            Status = ServiceStatus.NotInitialized;
+            Status = Status.NotInitialized;
         }
 
         /// <summary>
@@ -157,13 +164,13 @@ namespace SiweiSoft.SAPIService.Core
             Log.LogCommentM(CommentType.Info, "{0}: Initializing service ...", _fullServiceName);
             listener = new HttpListener();
             listener.Prefixes.Add(string.Format("http://{0}:{1}/", _ipAddress, _port.ToString()));
-            Status = ServiceStatus.Ready;
+            Status = Status.Ready;
             Log.LogCommentM(CommentType.Info, "{0}: Service binded to ip:{1} and port{2}.", _fullServiceName, _ipAddress, _port.ToString());
 
             try
             {
                 listener.Start();
-                Status = ServiceStatus.Running;
+                Status = Status.Running;
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", _fullServiceName);
                 SessionsDictionary = new Dictionary<string, TSession>();
@@ -192,7 +199,7 @@ namespace SiweiSoft.SAPIService.Core
             catch (HttpListenerException ex)
             {
                 listener.Stop();
-                Status = ServiceStatus.NotInitialized;
+                Status = Status.NotInitialized;
                 Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, _fullServiceName);
             }
         }
@@ -202,9 +209,9 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         public void Process()
         {
-            if (Status == ServiceStatus.Running)
+            if (Status == Status.Running)
             {
-                while (Status == ServiceStatus.Running)
+                while (Status == Status.Running)
                 {
                     try
                     {
@@ -269,7 +276,7 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         public void Stop()
         {
-            Status = ServiceStatus.Stopped;
+            Status = Status.Stopped;
             listener.Stop();
             Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", _fullServiceName);
         }
