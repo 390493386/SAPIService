@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace SiweiSoft.SAPIService.Core
 {
-    public class ControllerReflectionInfo
+    internal class ControllerReflectionInfo
     {
         /// <summary>
         /// Controller instance

@@ -2,7 +2,7 @@
 
 namespace SiweiSoft.SAPIService.Core
 {
-    public class ActionInfo
+    internal class ActionInfo
     {
         /// <summary>
         /// Action
@@ -18,7 +18,8 @@ namespace SiweiSoft.SAPIService.Core
         /// Constructor
         /// </summary>
         public ActionInfo()
-        { }
+        {
+        }
 
         /// <summary>
         /// Constructor

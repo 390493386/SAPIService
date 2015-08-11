@@ -7,7 +7,7 @@ using System.Web.Script.Serialization;
 
 namespace SiweiSoft.SAPIService.Core
 {
-    public class SapiRequest
+    internal class SapiRequest
     {
         /// <summary>
         /// Http request
@@ -15,19 +15,14 @@ namespace SiweiSoft.SAPIService.Core
         private HttpListenerContext _context;
 
         /// <summary>
-        /// Origin host, for cross origin
-        /// </summary>
-        private string _originHost;
-
-        /// <summary>
-        /// Other configurations
-        /// </summary>
-        private Dictionary<string, object> _config { get; set; }
-
-        /// <summary>
         /// Current session
         /// </summary>
-        private Session _session { get; set; }
+        private Session _session;
+
+        /// <summary>
+        /// Origin host
+        /// </summary>
+        private string _originHost;
 
         /// <summary>
         /// Controllers informations
@@ -39,16 +34,15 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         /// <param name="requestContext"></param>
         /// <param name="session"></param>
-        /// <param name="config"></param>
+        /// <param name="controllersInfos"></param>
         /// <param name="originHost"></param>
-        public SapiRequest(HttpListenerContext requestContext, Session session, 
+        public SapiRequest(HttpListenerContext requestContext, Session session,
             Dictionary<string, ControllerReflectionInfo> controllersInfos,
-            Dictionary<string, object> config = null, string originHost = null)
+            string originHost)
         {
             _context = requestContext;
             _session = session;
             _controllersInfos = controllersInfos;
-            _config = config;
             _originHost = originHost;
         }
 
@@ -60,7 +54,6 @@ namespace SiweiSoft.SAPIService.Core
             if (_context != null)
             {
                 _context.Response.Headers.Add("Access-Control-Allow-Credentials: true");
-                _originHost = String.IsNullOrEmpty(_originHost) ? "*" : _originHost;
                 _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
                 try
                 {
