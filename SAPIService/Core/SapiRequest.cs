@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Web;
 using System.Web.Script.Serialization;
 
 namespace SiweiSoft.SAPIService.Core
@@ -30,20 +31,27 @@ namespace SiweiSoft.SAPIService.Core
         private Dictionary<string, ControllerReflectionInfo> _controllersInfos;
 
         /// <summary>
+        /// Server configurations
+        /// </summary>
+        private Dictionary<string, object> _serverConfigs;
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="requestContext"></param>
         /// <param name="session"></param>
         /// <param name="controllersInfos"></param>
         /// <param name="originHost"></param>
+        /// <param name="serverConfigs">Server configurations</param>
         public SapiRequest(HttpListenerContext requestContext, Session session,
             Dictionary<string, ControllerReflectionInfo> controllersInfos,
-            string originHost)
+            string originHost, Dictionary<string, object> serverConfigs)
         {
             _context = requestContext;
             _session = session;
             _controllersInfos = controllersInfos;
             _originHost = originHost;
+            _serverConfigs = serverConfigs;
         }
 
         /// <summary>
@@ -57,11 +65,6 @@ namespace SiweiSoft.SAPIService.Core
                 _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
                 try
                 {
-                    Dictionary<string, object> parameters = new Dictionary<string, object>(); //TODO: 从service层传递
-
-                    //Get request parameters
-                    GetRequestParameters(ref parameters);
-
                     ActionResult actionResult = null;
 
                     //Initialize controller instance and get action information
@@ -74,7 +77,11 @@ namespace SiweiSoft.SAPIService.Core
                         if (!_session.IsAuthorized && actionInfo.NeedAuthorize)
                             actionResult = new ActionNotAuthorized();
                         else
+                        {
+                            controllerInstance.Parameters = GetRequestParameters();
+                            controllerInstance.ServerConfigs = _serverConfigs;
                             actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
+                        }
                     }
 
                     //Response
@@ -127,15 +134,15 @@ namespace SiweiSoft.SAPIService.Core
             }
         }
 
-        private void GetRequestParameters(ref Dictionary<string, object> parameters)
+        private Dictionary<string, object> GetRequestParameters()
         {
-            parameters = parameters ?? new Dictionary<string, object>();
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
 
             string requestMethod = _context.Request.HttpMethod.ToUpper();
 
             var urlParts = _context.Request.RawUrl.Split('?');
             if (urlParts.Length > 1)
-                GetURLParameters(ref parameters, urlParts[1]);
+                GetURLParameters(ref parameters, HttpUtility.UrlDecode(urlParts[1]));
 
             if (requestMethod == "POST" && _context.Request.InputStream.CanRead)
             {
@@ -160,6 +167,7 @@ namespace SiweiSoft.SAPIService.Core
                 else
                     GetURLParameters(ref parameters, postData);
             }
+            return parameters;
         }
 
         private void GetURLParameters(ref Dictionary<string, object> parameters, string queryString)

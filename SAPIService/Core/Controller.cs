@@ -6,6 +6,15 @@ namespace SiweiSoft.SAPIService.Core
     public abstract class Controller: ICloneable
     {
         /// <summary>
+        /// Server configurations
+        /// </summary>
+        public Dictionary<string, object> ServerConfigs
+        {
+            protected get;
+            set;
+        }
+
+        /// <summary>
         /// Paramenters
         /// </summary>
         public Dictionary<string, object> Parameters

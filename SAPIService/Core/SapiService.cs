@@ -80,12 +80,12 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Controllers informations
         /// </summary>
-        private Dictionary<string, ControllerReflectionInfo> ControllersInfos;
+        private Dictionary<string, ControllerReflectionInfo> controllersInfos;
 
         /// <summary>
         /// Sessions dictionary
         /// </summary>
-        private Dictionary<string, TSession> SessionsDictionary;
+        private Dictionary<string, TSession> sessionsDictionary;
 
         /// <summary>
         /// Default service name
@@ -173,23 +173,23 @@ namespace SiweiSoft.SAPIService.Core
                 Status = Status.Running;
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", _fullServiceName);
-                SessionsDictionary = new Dictionary<string, TSession>();
+                sessionsDictionary = new Dictionary<string, TSession>();
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", _fullServiceName);
                 Assembly assembly = String.IsNullOrEmpty(_controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(_controllersAssembly);
                 if (assembly != null)
                 {
-                    ControllersInfos = new Dictionary<string, ControllerReflectionInfo>();
+                    controllersInfos = new Dictionary<string, ControllerReflectionInfo>();
                     Type[] types = assembly.GetTypes();
                     foreach (Type type in types)
                     {
                         if (type.Name.Length > 10 && type.Name.EndsWith("Controller"))
                         {
                             string key = type.Name.Replace("Controller", null).ToUpper();
-                            if (ControllersInfos.ContainsKey(key))
+                            if (controllersInfos.ContainsKey(key))
                                 Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}, may cause confliction！", _fullServiceName, key);
                             else
-                                ControllersInfos.Add(key, new ControllerReflectionInfo(type));
+                                controllersInfos.Add(key, new ControllerReflectionInfo(type));
                         }
                     }
                 }
@@ -198,7 +198,6 @@ namespace SiweiSoft.SAPIService.Core
             }
             catch (HttpListenerException ex)
             {
-                listener.Stop();
                 Status = Status.NotInitialized;
                 Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, _fullServiceName);
             }
@@ -259,13 +258,13 @@ namespace SiweiSoft.SAPIService.Core
                         else
                         {
                             string cookieString = cookie.Value;
-                            if (SessionsDictionary.ContainsKey(cookieString))
-                                session = SessionsDictionary[cookieString];
+                            if (sessionsDictionary.ContainsKey(cookieString))
+                                session = sessionsDictionary[cookieString];
                             else
                                 session = this.GenerateNewSession(requestContext, expires: cookie.Expires);
                         }
                     }
-                    SapiRequest request = new SapiRequest(requestContext, session, ControllersInfos, _originHost);
+                    SapiRequest request = new SapiRequest(requestContext, session, controllersInfos, _originHost, _serverConfig);
                     request.Response();
                 }
             }
@@ -298,7 +297,7 @@ namespace SiweiSoft.SAPIService.Core
                 IsAuthorized = false
             };
             session.ResetExpireDate(_cookieExpires);
-            SessionsDictionary.Add(cookieString, session);
+            sessionsDictionary.Add(cookieString, session);
             return session;
         }
     }
