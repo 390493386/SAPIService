@@ -1,4 +1,6 @@
-﻿namespace SiweiSoft.SAPIService.Helper
+﻿using System;
+
+namespace SiweiSoft.SAPIService.Helper
 {
     /// <summary>
     /// Comment type
@@ -34,7 +36,7 @@
                 if (arg.Length == 0)
                     LogEventChildThread(type, message);
                 else
-                    LogEventChildThread(type, string.Format(message, arg));
+                    LogEventChildThread(type, String.Format(message, arg));
             }
         }
 
@@ -48,7 +50,7 @@
         {
             if (LogEventMainThread != null)
             {
-                LogEventMainThread(type, string.Format(message, arg));
+                LogEventMainThread(type, String.Format(message, arg));
             }
         }
     }
