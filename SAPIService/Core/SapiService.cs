@@ -25,47 +25,47 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Full service name
         /// </summary>
-        private string _fullServiceName;
+        private string fullServiceName;
 
         /// <summary>
         /// Binded IP
         /// </summary>
-        private string _ipAddress;
+        private string ipAddress;
 
         /// <summary>
         /// Listened port
         /// </summary>
-        private int _port;
+        private int port;
 
         /// <summary>
         /// Root path of server, for different site
         /// </summary>
-        private string _rootPath;
+        private string rootPath;
 
         /// <summary>
         /// Cross origin host
         /// </summary>
-        private string _originHost;
+        private string originHost;
 
         /// <summary>
         /// File server path
         /// </summary>
-        private string _fileServerPath;
+        private string fileServerPath;
 
         /// <summary>
         /// Cookie name
         /// </summary>
-        private string _cookieName;
+        private string cookieName;
 
         /// <summary>
         /// Cookies expires time(seconds)
         /// </summary>
-        private int _cookieExpires;
+        private int cookieExpires;
 
         /// <summary>
         /// Controllers assembly(full name)
         /// </summary>
-        private string _controllersAssembly;
+        private string controllersAssembly;
 
         /// <summary>
         /// Http listener
@@ -75,7 +75,7 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Server configurations
         /// </summary>
-        private Dictionary<string, object> _serverConfig;
+        private Dictionary<string, object> serverConfig;
 
         /// <summary>
         /// Controllers informations
@@ -109,11 +109,11 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         public SapiService()
         {
-            _ipAddress = "localhost";
-            _port = 8885;
-            _fullServiceName = "Web service(" + defaultServiceName + "," + _ipAddress + ":" + _port.ToString() + ")";
-            _originHost = "*";
-            _cookieExpires = defaultCookieExpires;
+            ipAddress = "localhost";
+            port = 8885;
+            fullServiceName = "Web service(" + defaultServiceName + "," + ipAddress + ":" + port.ToString() + ")";
+            originHost = "*";
+            cookieExpires = defaultCookieExpires;
 
             Status = Status.NotInitialized;
         }
@@ -137,16 +137,16 @@ namespace SiweiSoft.SAPIService.Core
             int? cookieExpires = null, string controllersAssembly = null,
             Dictionary<string, object> serverConfig = null)
         {
-            _ipAddress = ipAddress;
-            _port = port;
-            _rootPath = rootPath;
-            _fullServiceName = "Web service(" + serviceName + "," + _ipAddress + ":" + _port.ToString() + ")";
-            _originHost = originHost;
-            _fileServerPath = fileServerPath;
-            _cookieName = cookieName;
-            _cookieExpires = cookieExpires ?? defaultCookieExpires;
-            _controllersAssembly = controllersAssembly;
-            _serverConfig = serverConfig;
+            this.ipAddress = ipAddress;
+            this.port = port;
+            this.rootPath = rootPath;
+            this.fullServiceName = "Web service(" + serviceName + "," + this.ipAddress + ":" + this.port.ToString() + ")";
+            this.originHost = originHost;
+            this.fileServerPath = fileServerPath;
+            this.cookieName = cookieName;
+            this.cookieExpires = cookieExpires ?? defaultCookieExpires;
+            this.controllersAssembly = controllersAssembly;
+            this.serverConfig = serverConfig;
 
             Status = Status.NotInitialized;
         }
@@ -156,27 +156,27 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         public void Initialize()
         {
-            if (String.IsNullOrEmpty(_ipAddress) || _port < 1)
+            if (String.IsNullOrEmpty(ipAddress) || port < 1)
             {
-                Log.LogCommentM(CommentType.Error, "{0}: service configurations error.", _fullServiceName);
+                Log.LogCommentM(CommentType.Error, "{0}: service configurations error.", fullServiceName);
                 return;
             }
-            Log.LogCommentM(CommentType.Info, "{0}: Initializing service ...", _fullServiceName);
+            Log.LogCommentM(CommentType.Info, "{0}: Initializing service ...", fullServiceName);
             listener = new HttpListener();
-            listener.Prefixes.Add(string.Format("http://{0}:{1}/", _ipAddress, _port.ToString()));
+            listener.Prefixes.Add(string.Format("http://{0}:{1}/", ipAddress, port.ToString()));
             Status = Status.Ready;
-            Log.LogCommentM(CommentType.Info, "{0}: Service binded to ip:{1} and port{2}.", _fullServiceName, _ipAddress, _port.ToString());
+            Log.LogCommentM(CommentType.Info, "{0}: Service binded to ip:{1} and port{2}.", fullServiceName, ipAddress, port.ToString());
 
             try
             {
                 listener.Start();
                 Status = Status.Running;
 
-                Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", _fullServiceName);
+                Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", fullServiceName);
                 sessionsDictionary = new Dictionary<string, TSession>();
 
-                Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", _fullServiceName);
-                Assembly assembly = String.IsNullOrEmpty(_controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(_controllersAssembly);
+                Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", fullServiceName);
+                Assembly assembly = String.IsNullOrEmpty(controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(controllersAssembly);
                 if (assembly != null)
                 {
                     controllersInfos = new Dictionary<string, ControllerReflectionInfo>();
@@ -187,19 +187,19 @@ namespace SiweiSoft.SAPIService.Core
                         {
                             string key = type.Name.Replace("Controller", null).ToUpper();
                             if (controllersInfos.ContainsKey(key))
-                                Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}, may cause confliction！", _fullServiceName, key);
+                                Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}, may cause confliction！", fullServiceName, key);
                             else
                                 controllersInfos.Add(key, new ControllerReflectionInfo(type));
                         }
                     }
                 }
 
-                Log.LogCommentM(CommentType.Info, "{0}: service started, waiting connection ...", _fullServiceName);
+                Log.LogCommentM(CommentType.Info, "{0}: service started, waiting connection ...", fullServiceName);
             }
             catch (HttpListenerException ex)
             {
                 Status = Status.NotInitialized;
-                Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, _fullServiceName);
+                Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, fullServiceName);
             }
         }
 
@@ -219,13 +219,13 @@ namespace SiweiSoft.SAPIService.Core
                     }
                     catch (HttpListenerException)
                     {
-                        Log.LogCommentC(CommentType.Warn, "{0}: service threads stoped.", _fullServiceName);
+                        Log.LogCommentC(CommentType.Warn, "{0}: service threads stoped.", fullServiceName);
                     }
                 }
             }
             else
             {
-                Log.LogCommentC(CommentType.Error, "{0}: service was not initialized or not initialized successfully.", _fullServiceName);
+                Log.LogCommentC(CommentType.Error, "{0}: service was not initialized or not initialized successfully.", fullServiceName);
             }
         }
 
@@ -247,10 +247,10 @@ namespace SiweiSoft.SAPIService.Core
                 else
                 {
                     TSession session = null;
-                    if (!String.IsNullOrEmpty(_cookieName))
+                    if (!String.IsNullOrEmpty(cookieName))
                     {
                         //Get the cookie from the request
-                        Cookie cookie = requestContext.Request.Cookies[_cookieName];
+                        Cookie cookie = requestContext.Request.Cookies[cookieName];
                         if (cookie == null)
                         {
                             session = GenerateNewSession(requestContext);
@@ -264,7 +264,7 @@ namespace SiweiSoft.SAPIService.Core
                                 session = this.GenerateNewSession(requestContext, expires: cookie.Expires);
                         }
                     }
-                    SapiRequest request = new SapiRequest(requestContext, session, controllersInfos, _originHost, _serverConfig);
+                    SapiRequest request = new SapiRequest(requestContext, session, controllersInfos, originHost, serverConfig);
                     request.Response();
                 }
             }
@@ -277,7 +277,7 @@ namespace SiweiSoft.SAPIService.Core
         {
             Status = Status.Stopped;
             listener.Stop();
-            Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", _fullServiceName);
+            Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", fullServiceName);
         }
 
         /// <summary>
@@ -287,16 +287,16 @@ namespace SiweiSoft.SAPIService.Core
         private TSession GenerateNewSession(HttpListenerContext context, DateTime? expires = null)
         {
             string cookieString = Guid.NewGuid().ToString();
-            Cookie cookie = new Cookie(_cookieName, cookieString, "/")
+            Cookie cookie = new Cookie(cookieName, cookieString, "/")
             {
-                Expires = expires ?? DateTime.Now.AddSeconds(_cookieExpires)
+                Expires = expires ?? DateTime.Now.AddSeconds(cookieExpires)
             };
             context.Response.SetCookie(cookie);
             TSession session = new TSession()
             {
                 IsAuthorized = false
             };
-            session.ResetExpireDate(_cookieExpires);
+            session.ResetExpireDate(cookieExpires);
             sessionsDictionary.Add(cookieString, session);
             return session;
         }
