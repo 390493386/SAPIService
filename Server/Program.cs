@@ -1,4 +1,4 @@
-﻿using SiweiSoft.SAPIService.Core;
+﻿using SiweiSoft.SAPIService;
 using SiweiSoft.SAPIService.Helper;
 using System;
 
