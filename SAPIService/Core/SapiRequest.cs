@@ -21,30 +21,14 @@ namespace SiweiSoft.SAPIService.Core
         private Session session;
 
         /// <summary>
-        /// Controllers informations
-        /// </summary>
-        private Dictionary<string, ControllerReflectionInfo> controllersInfos;
-
-        /// <summary>
-        /// Server configurations
-        /// </summary>
-        private Dictionary<string, object> serverConfigs;
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="requestContext"></param>
         /// <param name="session"></param>
-        /// <param name="controllersInfos"></param>
-        /// <param name="serverConfigs">Server configurations</param>
-        public SapiRequest(HttpListenerContext requestContext, Session session,
-            Dictionary<string, ControllerReflectionInfo> controllersInfos,
-            Dictionary<string, object> serverConfigs)
+        public SapiRequest(HttpListenerContext requestContext, Session session)
         {
             context = requestContext;
             this.session = session;
-            this.controllersInfos = controllersInfos;
-            this.serverConfigs = serverConfigs;
         }
 
         /// <summary>
@@ -67,8 +51,9 @@ namespace SiweiSoft.SAPIService.Core
                         actionResult = new ActionNotAuthorized();
                     else
                     {
+                        controllerInstance.Session = this.session;
                         controllerInstance.Parameters = GetRequestParameters();
-                        controllerInstance.ServerConfigs = serverConfigs;
+                        controllerInstance.ServerConfigs = SapiService.ServerConfigs;
                         actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
                     }
                 }
@@ -189,7 +174,7 @@ namespace SiweiSoft.SAPIService.Core
                 string controllerName = urlParts[2];
                 string actionName = urlParts[3];
 
-                ControllerReflectionInfo controllerInfo = controllersInfos.ContainsKey(controllerName) ? controllersInfos[controllerName] : null;
+                ControllerReflectionInfo controllerInfo = SapiService.ControllersInfos.ContainsKey(controllerName) ? SapiService.ControllersInfos[controllerName] : null;
                 if (controllerInfo != null)
                 {
                     actionInfo = controllerInfo != null ? controllerInfo.GetMethodInfoByAlias(actionName) : null;

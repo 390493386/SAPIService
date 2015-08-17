@@ -23,13 +23,12 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Get current session
+        /// Session
         /// </summary>
-        /// <typeparam name="TSession"></typeparam>
-        /// <returns></returns>
-        public TSession GetSession<TSession>() where TSession : Session
+        public Session Session
         {
-            return Parameters.ContainsKey("Session") ? (TSession)Parameters["Session"] : default(TSession);
+            protected get;
+            set;
         }
 
         public virtual Controller Clone()

@@ -19,9 +19,9 @@ namespace SiweiSoft.SAPIService
         Stopped
     }
 
-    public class SapiService<TSession> where TSession : Session, new()
+    public class SapiService
     {
-        #region private properties
+        #region private fields
 
         /// <summary>
         /// Full service name
@@ -73,20 +73,38 @@ namespace SiweiSoft.SAPIService
         /// </summary>
         private HttpListener listener;
 
+        #endregion private fields
+
+        #region internal static fields
+
         /// <summary>
         /// Server configurations
         /// </summary>
-        private Dictionary<string, object> serverConfig;
+        internal static Dictionary<string, object> ServerConfigs;
 
         /// <summary>
         /// Controllers informations
         /// </summary>
-        private Dictionary<string, ControllerReflectionInfo> controllersInfos;
+        internal static Dictionary<string, ControllerReflectionInfo> ControllersInfos;
 
         /// <summary>
         /// Sessions dictionary
         /// </summary>
-        private Dictionary<string, TSession> sessionsDictionary;
+        internal static Dictionary<string, Session> SessionsDictionary;
+
+        #endregion internal static fields
+
+        #region private const variable, for default values
+
+        /// <summary>
+        /// Local host
+        /// </summary>
+        private const string defaultIPAddress = "localhost";
+
+        /// <summary>
+        /// Port 8885
+        /// </summary>
+        private const int defaultPort = 8885;
 
         /// <summary>
         /// Default service name
@@ -94,26 +112,35 @@ namespace SiweiSoft.SAPIService
         private const string defaultServiceName = "WebService";
 
         /// <summary>
+        /// Default origin host
+        /// </summary>
+        private const string defaultOriginHost = "*";
+
+        /// <summary>
         /// Default cookie expires(seconds)
         /// </summary>
         private const int defaultCookieExpires = 3600;
 
-        #endregion private properties
+        #endregion private const variable, for default values
+
+        #region public properties
 
         /// <summary>
         /// Service status
         /// </summary>
         public Status Status { get; private set; }
 
+        #endregion public properties
+
         /// <summary>
         /// Constructor without arguement
         /// </summary>
         public SapiService()
         {
-            ipAddress = "localhost";
-            port = 8885;
+            ipAddress = defaultIPAddress;
+            port = defaultPort;
             fullServiceName = "Web service(" + defaultServiceName + ")";
-            originHost = "*";
+            originHost = defaultOriginHost;
             cookieExpires = defaultCookieExpires;
 
             Status = Status.NotInitialized;
@@ -133,9 +160,9 @@ namespace SiweiSoft.SAPIService
         /// <param name="controllersAssembly">Controllers assembly</param>
         /// <param name="serverConfig">Server configurations</param>
         public SapiService(string ipAddress, int port, string rootPath = null,
-            string serviceName = defaultServiceName, string originHost = "*",
+            string serviceName = defaultServiceName, string originHost = defaultOriginHost,
             string fileServerPath = null, string cookieName = null,
-            int? cookieExpires = null, string controllersAssembly = null,
+            int cookieExpires = defaultCookieExpires, string controllersAssembly = null,
             Dictionary<string, object> serverConfig = null)
         {
             this.ipAddress = ipAddress;
@@ -145,9 +172,9 @@ namespace SiweiSoft.SAPIService
             this.originHost = originHost;
             this.fileServerPath = fileServerPath;
             this.cookieName = cookieName;
-            this.cookieExpires = cookieExpires ?? defaultCookieExpires;
+            this.cookieExpires = cookieExpires;
             this.controllersAssembly = controllersAssembly;
-            this.serverConfig = serverConfig;
+            ServerConfigs = serverConfig;
 
             Status = Status.NotInitialized;
         }
@@ -174,23 +201,23 @@ namespace SiweiSoft.SAPIService
                 Status = Status.Running;
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", fullServiceName);
-                sessionsDictionary = new Dictionary<string, TSession>();
+                SessionsDictionary = new Dictionary<string, Session>();
 
                 Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", fullServiceName);
                 Assembly assembly = String.IsNullOrEmpty(controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(controllersAssembly);
                 if (assembly != null)
                 {
-                    controllersInfos = new Dictionary<string, ControllerReflectionInfo>();
+                    ControllersInfos = new Dictionary<string, ControllerReflectionInfo>();
                     Type[] types = assembly.GetTypes();
                     foreach (Type type in types)
                     {
                         if (type.Name.Length > 10 && type.Name.EndsWith("Controller"))
                         {
                             string key = type.Name.Replace("Controller", null).ToUpper();
-                            if (controllersInfos.ContainsKey(key))
+                            if (ControllersInfos.ContainsKey(key))
                                 Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}, may cause confliction！", fullServiceName, key);
                             else
-                                controllersInfos.Add(key, new ControllerReflectionInfo(type));
+                                ControllersInfos.Add(key, new ControllerReflectionInfo(type));
                         }
                     }
                 }
@@ -207,7 +234,7 @@ namespace SiweiSoft.SAPIService
         /// <summary>
         /// Process service
         /// </summary>
-        public void Process()
+        public void Process<TSession>() where TSession : Session, new()
         {
             if (Status == Status.Running)
             {
@@ -216,7 +243,8 @@ namespace SiweiSoft.SAPIService
                     try
                     {
                         HttpListenerContext context = listener.GetContext();
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(this.ConcreteProcess), context);
+                        if (context != null)
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(this.ConcreteProcess<TSession>), context);
                     }
                     catch (HttpListenerException)
                     {
@@ -234,45 +262,42 @@ namespace SiweiSoft.SAPIService
         /// Concrete process
         /// </summary>
         /// <param name="context"></param>
-        private void ConcreteProcess(object context)
+        private void ConcreteProcess<TSession>(object context) where TSession : Session, new()
         {
-            if (context != null)
+            HttpListenerContext requestContext = (HttpListenerContext)context;
+
+            if (requestContext.Request.RawUrl == "/favicon.ico")//Request for the icon
             {
-                HttpListenerContext requestContext = (HttpListenerContext)context;
+                //TODO: handle the request for the icon
+                requestContext.Response.OutputStream.Close();
+            }
+            else
+            {
+                TSession session = null;
+                if (!String.IsNullOrEmpty(cookieName))
+                {
+                    //Set cros options
+                    requestContext.Response.Headers.Add("Access-Control-Allow-Credentials: true");
 
-                if (requestContext.Request.RawUrl == "/favicon.ico")//Request for the icon
-                {
-                    //TODO: handle the request for the icon
-                    requestContext.Response.OutputStream.Close();
-                }
-                else
-                {
-                    TSession session = null;
-                    if (!String.IsNullOrEmpty(cookieName))
+                    //Get the cookie from the request
+                    Cookie cookie = requestContext.Request.Cookies[cookieName];
+                    if (cookie == null)
                     {
-                        //Set cros options
-                        requestContext.Response.Headers.Add("Access-Control-Allow-Credentials: true");
-
-                        //Get the cookie from the request
-                        Cookie cookie = requestContext.Request.Cookies[cookieName];
-                        if (cookie == null)
-                        {
-                            session = GenerateNewSession(requestContext);
-                        }
-                        else
-                        {
-                            string cookieString = cookie.Value;
-                            if (sessionsDictionary.ContainsKey(cookieString))
-                                session = sessionsDictionary[cookieString];
-                            else
-                                session = this.GenerateNewSession(requestContext, expires: cookie.Expires);
-                        }
+                        session = GenerateNewSession<TSession>(requestContext);
                     }
-                    requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + originHost);
-
-                    SapiRequest request = new SapiRequest(requestContext, session, controllersInfos, serverConfig);
-                    request.Response();
+                    else
+                    {
+                        string cookieString = cookie.Value;
+                        if (SessionsDictionary.ContainsKey(cookieString))
+                            session = (TSession)SessionsDictionary[cookieString];
+                        else
+                            session = this.GenerateNewSession<TSession>(requestContext, expires: cookie.Expires);
+                    }
                 }
+                requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + originHost);
+
+                SapiRequest request = new SapiRequest(requestContext, session);
+                request.Response();
             }
         }
 
@@ -290,7 +315,8 @@ namespace SiweiSoft.SAPIService
         /// Generate a new session
         /// </summary>
         /// <returns></returns>
-        private TSession GenerateNewSession(HttpListenerContext context, DateTime? expires = null)
+        private TSession GenerateNewSession<TSession>(HttpListenerContext context, DateTime? expires = null) 
+            where TSession : Session, new()
         {
             string cookieString = Guid.NewGuid().ToString();
             Cookie cookie = new Cookie(cookieName, cookieString, "/")
@@ -303,7 +329,7 @@ namespace SiweiSoft.SAPIService
                 IsAuthorized = false
             };
             session.ResetExpireDate(cookieExpires);
-            sessionsDictionary.Add(cookieString, session);
+            SessionsDictionary.Add(cookieString, session);
             return session;
         }
     }

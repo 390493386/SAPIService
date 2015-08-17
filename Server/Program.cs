@@ -8,13 +8,13 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            SapiService<Session> service = new SapiService<Session>("192.168.1.86", 8889, serviceName: "sb");
+            SapiService service = new SapiService("192.168.1.86", 8889, serviceName: "sb");
 
             Log.LogEventChildThread += LogCommentC;
             Log.LogEventMainThread += LogCommentM;
 
             service.Initialize();
-            service.Process();
+            service.Process<UserSession>();
 
             //service.Stop();
             Console.Read();
