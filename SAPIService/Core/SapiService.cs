@@ -1,12 +1,11 @@
-﻿using SiweiSoft.SAPIService.Core;
-using SiweiSoft.SAPIService.Helper;
+﻿using SiweiSoft.SAPIService.Helper;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading;
 
-namespace SiweiSoft.SAPIService
+namespace SiweiSoft.SAPIService.Core
 {
     /// <summary>
     /// Service status

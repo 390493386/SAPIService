@@ -1,4 +1,4 @@
-﻿using SiweiSoft.SAPIService;
+﻿using SiweiSoft.SAPIService.Core;
 
 namespace Server
 {

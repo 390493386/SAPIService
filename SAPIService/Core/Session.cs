@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SiweiSoft.SAPIService
+namespace SiweiSoft.SAPIService.Core
 {
     /// <summary>
     /// For user session

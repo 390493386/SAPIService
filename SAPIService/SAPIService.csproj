@@ -47,8 +47,8 @@
     <Compile Include="Core\ControllerReflectionInfo.cs" />
     <Compile Include="Core\ActionResult.cs" />
     <Compile Include="Core\SapiRequest.cs" />
-    <Compile Include="SapiService.cs" />
-    <Compile Include="Session.cs" />
+    <Compile Include="Core\SapiService.cs" />
+    <Compile Include="Core\Session.cs" />
     <Compile Include="Helper\Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
