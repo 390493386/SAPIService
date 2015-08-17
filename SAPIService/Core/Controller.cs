@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SiweiSoft.SAPIService.Core
 {
-    public abstract class Controller: ICloneable
+    public abstract class Controller
     {
         /// <summary>
         /// Server configurations
@@ -33,12 +32,7 @@ namespace SiweiSoft.SAPIService.Core
             return Parameters.ContainsKey("Session") ? (TSession)Parameters["Session"] : default(TSession);
         }
 
-        object ICloneable.Clone()
-        {
-            return this.Clone();
-        }
-
-        public Controller Clone()
+        public virtual Controller Clone()
         {
             return (Controller)this.MemberwiseClone();
         }

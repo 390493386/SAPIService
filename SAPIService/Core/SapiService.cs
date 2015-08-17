@@ -111,7 +111,7 @@ namespace SiweiSoft.SAPIService.Core
         {
             ipAddress = "localhost";
             port = 8885;
-            fullServiceName = "Web service(" + defaultServiceName + "," + ipAddress + ":" + port.ToString() + ")";
+            fullServiceName = "Web service(" + defaultServiceName + ")";
             originHost = "*";
             cookieExpires = defaultCookieExpires;
 
@@ -140,7 +140,7 @@ namespace SiweiSoft.SAPIService.Core
             this.ipAddress = ipAddress;
             this.port = port;
             this.rootPath = rootPath;
-            this.fullServiceName = "Web service(" + serviceName + "," + this.ipAddress + ":" + this.port.ToString() + ")";
+            this.fullServiceName = "Web service(" + serviceName + ")";
             this.originHost = originHost;
             this.fileServerPath = fileServerPath;
             this.cookieName = cookieName;
@@ -249,6 +249,9 @@ namespace SiweiSoft.SAPIService.Core
                     TSession session = null;
                     if (!String.IsNullOrEmpty(cookieName))
                     {
+                        //Set cros options
+                        requestContext.Response.Headers.Add("Access-Control-Allow-Credentials: true");
+
                         //Get the cookie from the request
                         Cookie cookie = requestContext.Request.Cookies[cookieName];
                         if (cookie == null)
@@ -264,7 +267,9 @@ namespace SiweiSoft.SAPIService.Core
                                 session = this.GenerateNewSession(requestContext, expires: cookie.Expires);
                         }
                     }
-                    SapiRequest request = new SapiRequest(requestContext, session, controllersInfos, originHost, serverConfig);
+                    requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + originHost);
+
+                    SapiRequest request = new SapiRequest(requestContext, session, controllersInfos, serverConfig);
                     request.Response();
                 }
             }

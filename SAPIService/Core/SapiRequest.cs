@@ -13,27 +13,22 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Http request
         /// </summary>
-        private HttpListenerContext _context;
+        private HttpListenerContext context;
 
         /// <summary>
         /// Current session
         /// </summary>
-        private Session _session;
-
-        /// <summary>
-        /// Origin host
-        /// </summary>
-        private string _originHost;
+        private Session session;
 
         /// <summary>
         /// Controllers informations
         /// </summary>
-        private Dictionary<string, ControllerReflectionInfo> _controllersInfos;
+        private Dictionary<string, ControllerReflectionInfo> controllersInfos;
 
         /// <summary>
         /// Server configurations
         /// </summary>
-        private Dictionary<string, object> _serverConfigs;
+        private Dictionary<string, object> serverConfigs;
 
         /// <summary>
         /// Constructor
@@ -41,17 +36,15 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="requestContext"></param>
         /// <param name="session"></param>
         /// <param name="controllersInfos"></param>
-        /// <param name="originHost"></param>
         /// <param name="serverConfigs">Server configurations</param>
         public SapiRequest(HttpListenerContext requestContext, Session session,
             Dictionary<string, ControllerReflectionInfo> controllersInfos,
-            string originHost, Dictionary<string, object> serverConfigs)
+            Dictionary<string, object> serverConfigs)
         {
-            _context = requestContext;
-            _session = session;
-            _controllersInfos = controllersInfos;
-            _originHost = originHost;
-            _serverConfigs = serverConfigs;
+            context = requestContext;
+            this.session = session;
+            this.controllersInfos = controllersInfos;
+            this.serverConfigs = serverConfigs;
         }
 
         /// <summary>
@@ -59,78 +52,73 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         public void Response()
         {
-            if (_context != null)
+            try
             {
-                _context.Response.Headers.Add("Access-Control-Allow-Credentials: true");
-                _context.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);    //For the cross origin
-                try
-                {
-                    ActionResult actionResult = null;
+                ActionResult actionResult = null;
 
-                    //Initialize controller instance and get action information
-                    ActionInfo actionInfo = null;
-                    Controller controllerInstance = InitializeControllerInstance(out actionInfo);
-                    if (controllerInstance == null || actionInfo == null)
-                        Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+                //Initialize controller instance and get action information
+                ActionInfo actionInfo = null;
+                Controller controllerInstance = InitializeControllerInstance(out actionInfo);
+                if (controllerInstance == null || actionInfo == null)
+                    Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+                else
+                {
+                    if (!session.IsAuthorized && actionInfo.NeedAuthorize)
+                        actionResult = new ActionNotAuthorized();
                     else
                     {
-                        if (!_session.IsAuthorized && actionInfo.NeedAuthorize)
-                            actionResult = new ActionNotAuthorized();
-                        else
+                        controllerInstance.Parameters = GetRequestParameters();
+                        controllerInstance.ServerConfigs = serverConfigs;
+                        actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
+                    }
+                }
+
+                //Response
+                if (actionResult == null)
+                {
+                    context.Response.StatusCode = 404;
+                }
+                else
+                {
+                    if (actionResult.Headers != null)  //添加请求的头部
+                    {
+                        foreach (string head in actionResult.Headers)
                         {
-                            controllerInstance.Parameters = GetRequestParameters();
-                            controllerInstance.ServerConfigs = _serverConfigs;
-                            actionResult = (ActionResult)actionInfo.Action.Invoke(controllerInstance, null);
+                            context.Response.Headers.Add(head);
                         }
+                    }
+                    if (actionResult.FileStream != null)  //下载文件请求
+                    {
+                        int receivedLength = 0;
+                        byte[] buffer = new byte[10240];
+                        do
+                        {
+                            receivedLength = actionResult.FileStream.Read(buffer, 0, buffer.Length);
+                            context.Response.OutputStream.Write(buffer, 0, receivedLength);
+                        }
+                        while (receivedLength > 0);
+                        actionResult.FileStream.Flush();
+                        actionResult.FileStream.Close();
+                        context.Response.StatusCode = 200;
+                    }
+                    else if (actionResult.Result != null)  //数据请求
+                    {
+                        byte[] buffer = Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(actionResult.Result));
+                        context.Response.ContentLength64 = buffer.Length;
+                        context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                        context.Response.StatusCode = 200;
                     }
 
-                    //Response
-                    if (actionResult == null)
-                    {
-                        _context.Response.StatusCode = 404;
-                    }
-                    else
-                    {
-                        if (actionResult.Headers != null)  //添加请求的头部
-                        {
-                            foreach (string head in actionResult.Headers)
-                            {
-                                _context.Response.Headers.Add(head);
-                            }
-                        }
-                        if (actionResult.FileStream != null)  //下载文件请求
-                        {
-                            int receivedLength = 0;
-                            byte[] buffer = new byte[10240];
-                            do
-                            {
-                                receivedLength = actionResult.FileStream.Read(buffer, 0, buffer.Length);
-                                _context.Response.OutputStream.Write(buffer, 0, receivedLength);
-                            }
-                            while (receivedLength > 0);
-                            actionResult.FileStream.Flush();
-                            actionResult.FileStream.Close();
-                            _context.Response.StatusCode = 200;
-                        }
-                        else if (actionResult.Result != null)  //数据请求
-                        {
-                            byte[] buffer = Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(actionResult.Result));
-                            _context.Response.ContentLength64 = buffer.Length;
-                            _context.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                            _context.Response.StatusCode = 200;
-                        }
-
-                    }
                 }
-                catch (Exception ex)
-                {
-                    _context.Response.StatusCode = 500;
-                    Log.LogCommentC(CommentType.Error, "Unknow exception: " + ex.Message);
-                }
-                finally
-                {
-                    _context.Response.Close();
-                }
+            }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = 500;
+                Log.LogCommentC(CommentType.Error, "Unknow exception: " + ex.Message);
+            }
+            finally
+            {
+                context.Response.Close();
             }
         }
 
@@ -138,20 +126,20 @@ namespace SiweiSoft.SAPIService.Core
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
-            string requestMethod = _context.Request.HttpMethod.ToUpper();
+            string requestMethod = context.Request.HttpMethod.ToUpper();
 
-            var urlParts = _context.Request.RawUrl.Split('?');
+            var urlParts = context.Request.RawUrl.Split('?');
             if (urlParts.Length > 1)
                 GetURLParameters(ref parameters, HttpUtility.UrlDecode(urlParts[1]));
 
-            if (requestMethod == "POST" && _context.Request.InputStream.CanRead)
+            if (requestMethod == "POST" && context.Request.InputStream.CanRead)
             {
                 string postData = null;
                 byte[] buffer = new byte[4096];
                 int length = 0;
                 do
                 {
-                    length = _context.Request.InputStream.Read(buffer, 0, buffer.Length);
+                    length = context.Request.InputStream.Read(buffer, 0, buffer.Length);
                     postData += Encoding.UTF8.GetString(buffer, 0, length);
                 }
                 while (length > 0);
@@ -195,13 +183,13 @@ namespace SiweiSoft.SAPIService.Core
             actionInfo = null;
 
             //Get root name, controller name, and action name from request
-            string[] urlParts = (_context.Request.RawUrl.Split('?'))[0].Split('/');
+            string[] urlParts = (context.Request.RawUrl.Split('?'))[0].Split('/');
             if (urlParts.Length == 4 && urlParts[1] == "SAPI")
             {
                 string controllerName = urlParts[2];
                 string actionName = urlParts[3];
 
-                ControllerReflectionInfo controllerInfo = _controllersInfos.ContainsKey(controllerName) ? _controllersInfos[controllerName] : null;
+                ControllerReflectionInfo controllerInfo = controllersInfos.ContainsKey(controllerName) ? controllersInfos[controllerName] : null;
                 if (controllerInfo != null)
                 {
                     actionInfo = controllerInfo != null ? controllerInfo.GetMethodInfoByAlias(actionName) : null;
