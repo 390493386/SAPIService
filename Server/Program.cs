@@ -8,7 +8,7 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            SapiService service = new SapiService("192.168.1.86", 8889, serviceName: "sb");
+            SapiService service = new SapiService("192.168.1.86", 80, serviceName: "sb");
 
             Log.LogEventChildThread += LogCommentC;
             Log.LogEventMainThread += LogCommentM;

@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using System.Web.Script.Serialization;
+using System.Xml;
 
 namespace SiweiSoft.SAPIService.Core
 {
@@ -47,7 +48,7 @@ namespace SiweiSoft.SAPIService.Core
                     Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
                 else
                 {
-                    if (!session.IsAuthorized && actionInfo.NeedAuthorize)
+                    if (actionInfo.NeedAuthorize && !session.IsAuthorized)
                         actionResult = new ActionNotAuthorized();
                     else
                     {
@@ -65,14 +66,14 @@ namespace SiweiSoft.SAPIService.Core
                 }
                 else
                 {
-                    if (actionResult.Headers != null)  //添加请求的头部
+                    //添加请求的头部
+                    foreach (string head in actionResult.Headers)
                     {
-                        foreach (string head in actionResult.Headers)
-                        {
-                            context.Response.Headers.Add(head);
-                        }
+                        context.Response.Headers.Add(head);
                     }
-                    if (actionResult.FileStream != null)  //下载文件请求
+
+                    //下载文件请求
+                    if (actionResult.FileStream != null)
                     {
                         int receivedLength = 0;
                         byte[] buffer = new byte[10240];
@@ -86,9 +87,9 @@ namespace SiweiSoft.SAPIService.Core
                         actionResult.FileStream.Close();
                         context.Response.StatusCode = 200;
                     }
-                    else if (actionResult.Result != null)  //数据请求
+                    else  //数据请求
                     {
-                        byte[] buffer = Encoding.UTF8.GetBytes(new JavaScriptSerializer().Serialize(actionResult.Result));
+                        byte[] buffer = Encoding.UTF8.GetBytes(actionResult.GetResultString());
                         context.Response.ContentLength64 = buffer.Length;
                         context.Response.OutputStream.Write(buffer, 0, buffer.Length);
                         context.Response.StatusCode = 200;
@@ -137,6 +138,17 @@ namespace SiweiSoft.SAPIService.Core
                         parameters.Add(p.Key, p.Value);
                     }
                 }
+                else if (postData.StartsWith("<xml>"))
+                {
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml(postData);
+                    XmlNode ToUserName = doc.SelectSingleNode("/xml/ToUserName");
+                    XmlNode FromUserName = doc.SelectSingleNode("/xml/FromUserName");
+                    XmlNode Content = doc.SelectSingleNode("/xml/Content");
+                    parameters.Add("ToUserName", ToUserName.InnerText);
+                    parameters.Add("FromUserName", FromUserName.InnerText);
+                    parameters.Add("Content", Content.InnerText);
+                }
                 else
                     GetURLParameters(ref parameters, postData);
             }
@@ -171,8 +183,8 @@ namespace SiweiSoft.SAPIService.Core
             string[] urlParts = (context.Request.RawUrl.Split('?'))[0].Split('/');
             if (urlParts.Length == 4 && urlParts[1] == "SAPI")
             {
-                string controllerName = urlParts[2];
-                string actionName = urlParts[3];
+                string controllerName = urlParts[2].ToUpper();
+                string actionName = urlParts[3].ToUpper();
 
                 ControllerReflectionInfo controllerInfo = SapiService.ControllersInfos.ContainsKey(controllerName) ? SapiService.ControllersInfos[controllerName] : null;
                 if (controllerInfo != null)

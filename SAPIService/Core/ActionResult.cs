@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Web.Script.Serialization;
 
 namespace SiweiSoft.SAPIService.Core
 {
@@ -27,6 +28,15 @@ namespace SiweiSoft.SAPIService.Core
         {
             Headers = new List<string>();
             Result = new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// 获取返回结果
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetResultString()
+        {
+            return new JavaScriptSerializer().Serialize(this.Result);
         }
     }
 
