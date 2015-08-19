@@ -1,6 +1,7 @@
 ﻿using SiweiSoft.SAPIService.Helper;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
@@ -121,14 +122,13 @@ namespace SiweiSoft.SAPIService.Core
             if (requestMethod == "POST" && context.Request.InputStream.CanRead)
             {
                 string postData = null;
-                byte[] buffer = new byte[4096];
-                int length = 0;
-                do
+
+                using (Stream inputStream = HttpContext.Current.Request.InputStream)
                 {
-                    length = context.Request.InputStream.Read(buffer, 0, buffer.Length);
-                    postData += Encoding.UTF8.GetString(buffer, 0, length);
+                    Byte[] buffer = new Byte[inputStream.Length];
+                    inputStream.Read(buffer, 0, (Int32)inputStream.Length);
+                    postData = Encoding.UTF8.GetString(buffer);
                 }
-                while (length > 0);
 
                 if (postData.StartsWith("{"))
                 {
