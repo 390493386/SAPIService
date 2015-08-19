@@ -49,7 +49,7 @@ namespace SiweiSoft.SAPIService.Core
                     Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
                 else
                 {
-                    if (actionInfo.NeedAuthorize && !session.IsAuthorized)
+                    if (actionInfo.NeedAuthorize && (session == null || !session.IsAuthorized))
                         actionResult = new ActionNotAuthorized();
                     else
                     {
@@ -181,7 +181,8 @@ namespace SiweiSoft.SAPIService.Core
 
             //Get root name, controller name, and action name from request
             string[] urlParts = (context.Request.RawUrl.Split('?'))[0].Split('/');
-            if (urlParts.Length == 4 && urlParts[1] == "SAPI")
+            if ((urlParts.Length == 4 && String.Compare(urlParts[1], SapiService.RootPath, true) == 0)
+                || urlParts.Length == 3)
             {
                 string controllerName = urlParts[2].ToUpper();
                 string actionName = urlParts[3].ToUpper();

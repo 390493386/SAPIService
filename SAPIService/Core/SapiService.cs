@@ -38,11 +38,6 @@ namespace SiweiSoft.SAPIService.Core
         private int port;
 
         /// <summary>
-        /// Root path of server, for different site
-        /// </summary>
-        private string rootPath;
-
-        /// <summary>
         /// Cross origin host
         /// </summary>
         private string originHost;
@@ -75,6 +70,11 @@ namespace SiweiSoft.SAPIService.Core
         #endregion private fields
 
         #region internal static fields
+
+        /// <summary>
+        /// Root path of server, for different site
+        /// </summary>
+        internal static string RootPath;
 
         /// <summary>
         /// Server configurations
@@ -150,7 +150,7 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         /// <param name="ipAddress">IP address on local host</param>
         /// <param name="port">Available port on local host</param>
-        /// <param name="rootPath">Root path, for different web root path</param>
+        /// <param name="RootPath">Root path, for different web root path</param>
         /// <param name="serviceName">Service name</param>
         /// <param name="originHost">Cross origin host</param>
         /// <param name="fileServerPath">File server path</param>
@@ -166,7 +166,7 @@ namespace SiweiSoft.SAPIService.Core
         {
             this.ipAddress = ipAddress;
             this.port = port;
-            this.rootPath = rootPath;
+            RootPath = rootPath;
             this.fullServiceName = "Web service(" + serviceName + ")";
             this.originHost = originHost;
             this.fileServerPath = fileServerPath;
@@ -190,7 +190,8 @@ namespace SiweiSoft.SAPIService.Core
             }
             Log.LogCommentM(CommentType.Info, "{0}: Initializing service ...", fullServiceName);
             listener = new HttpListener();
-            listener.Prefixes.Add(string.Format("http://{0}:{1}/", ipAddress, port.ToString()));
+            listener.Prefixes.Add(string.Format("http://{0}:{1}/" +
+                (String.IsNullOrEmpty(RootPath) ? null : (RootPath + "/")), ipAddress, port.ToString()));
             Status = Status.Ready;
             Log.LogCommentM(CommentType.Info, "{0}: Service binded to ip:{1} and port{2}.", fullServiceName, ipAddress, port.ToString());
 
