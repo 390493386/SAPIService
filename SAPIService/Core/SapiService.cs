@@ -23,11 +23,6 @@ namespace SiweiSoft.SAPIService.Core
         #region private fields
 
         /// <summary>
-        /// Full service name
-        /// </summary>
-        private string fullServiceName;
-
-        /// <summary>
         /// Binded IP
         /// </summary>
         private string ipAddress;
@@ -55,7 +50,7 @@ namespace SiweiSoft.SAPIService.Core
         /// <summary>
         /// Cookies expires time(seconds)
         /// </summary>
-        private int cookieExpires;
+        private int? cookieExpires;
 
         /// <summary>
         /// Controllers assembly(full name)
@@ -93,35 +88,6 @@ namespace SiweiSoft.SAPIService.Core
 
         #endregion internal static fields
 
-        #region private const variable, for default values
-
-        /// <summary>
-        /// Local host
-        /// </summary>
-        private const string defaultIPAddress = "localhost";
-
-        /// <summary>
-        /// Port 8885
-        /// </summary>
-        private const int defaultPort = 8885;
-
-        /// <summary>
-        /// Default service name
-        /// </summary>
-        private const string defaultServiceName = "WebService";
-
-        /// <summary>
-        /// Default origin host
-        /// </summary>
-        private const string defaultOriginHost = "*";
-
-        /// <summary>
-        /// Default cookie expires(seconds)
-        /// </summary>
-        private const int defaultCookieExpires = 3600;
-
-        #endregion private const variable, for default values
-
         #region public properties
 
         /// <summary>
@@ -136,11 +102,8 @@ namespace SiweiSoft.SAPIService.Core
         /// </summary>
         public SapiService()
         {
-            ipAddress = defaultIPAddress;
-            port = defaultPort;
-            fullServiceName = "Web service(" + defaultServiceName + ")";
-            originHost = defaultOriginHost;
-            cookieExpires = defaultCookieExpires;
+            ipAddress = "localhost";
+            port = 8885;
 
             Status = Status.NotInitialized;
         }
@@ -151,23 +114,21 @@ namespace SiweiSoft.SAPIService.Core
         /// <param name="ipAddress">IP address on local host</param>
         /// <param name="port">Available port on local host</param>
         /// <param name="RootPath">Root path, for different web root path</param>
-        /// <param name="serviceName">Service name</param>
         /// <param name="originHost">Cross origin host</param>
         /// <param name="fileServerPath">File server path</param>
         /// <param name="cookieName">Cookie name</param>
         /// <param name="cookieExpires">Cookie expires</param>
         /// <param name="controllersAssembly">Controllers assembly</param>
         /// <param name="serverConfig">Server configurations</param>
-        public SapiService(string ipAddress, int port, string rootPath = null,
-            string serviceName = defaultServiceName, string originHost = defaultOriginHost,
+        public SapiService(string ipAddress, int port,
+            string rootPath = null, string originHost = null,
             string fileServerPath = null, string cookieName = null,
-            int cookieExpires = defaultCookieExpires, string controllersAssembly = null,
+            int? cookieExpires = null, string controllersAssembly = null,
             Dictionary<string, object> serverConfig = null)
         {
             this.ipAddress = ipAddress;
             this.port = port;
             RootPath = rootPath;
-            this.fullServiceName = "Web service(" + serviceName + ")";
             this.originHost = originHost;
             this.fileServerPath = fileServerPath;
             this.cookieName = cookieName;
@@ -185,25 +146,25 @@ namespace SiweiSoft.SAPIService.Core
         {
             if (String.IsNullOrEmpty(ipAddress) || port < 1)
             {
-                Log.LogCommentM(CommentType.Error, "{0}: service configurations error.", fullServiceName);
+                Log.Comment(CommentType.Error, "Service configurations error.");
                 return;
             }
-            Log.LogCommentM(CommentType.Info, "{0}: Initializing service ...", fullServiceName);
+            Log.Comment(CommentType.Info, "Initializing service ...");
             listener = new HttpListener();
             listener.Prefixes.Add(string.Format("http://{0}:{1}/" +
                 (String.IsNullOrEmpty(RootPath) ? null : (RootPath + "/")), ipAddress, port.ToString()));
             Status = Status.Ready;
-            Log.LogCommentM(CommentType.Info, "{0}: Service binded to ip:{1} and port{2}.", fullServiceName, ipAddress, port.ToString());
+            Log.Comment(CommentType.Info, "Service binded to ip:{0} and port{1}.", ipAddress, port.ToString());
 
             try
             {
                 listener.Start();
                 Status = Status.Running;
 
-                Log.LogCommentM(CommentType.Info, "{0}: initialize sessions dictionary ...", fullServiceName);
+                Log.Comment(CommentType.Info, "Initialize sessions dictionary ...");
                 SessionsDictionary = new Dictionary<string, Session>();
 
-                Log.LogCommentM(CommentType.Info, "{0}: initialize controllers informations ...", fullServiceName);
+                Log.Comment(CommentType.Info, "Initialize controllers informations ...");
                 Assembly assembly = String.IsNullOrEmpty(controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(controllersAssembly);
                 if (assembly != null)
                 {
@@ -215,19 +176,19 @@ namespace SiweiSoft.SAPIService.Core
                         {
                             string key = type.Name.Replace("Controller", null).ToUpper();
                             if (ControllersInfos.ContainsKey(key))
-                                Log.LogCommentM(CommentType.Warn, "{0}: duplicated key of controller：{1}, may cause confliction！", fullServiceName, key);
+                                Log.Comment(CommentType.Warn, "Duplicated key of controller：{0}, may cause confliction！", key);
                             else
                                 ControllersInfos.Add(key, new ControllerReflectionInfo(type));
                         }
                     }
                 }
 
-                Log.LogCommentM(CommentType.Info, "{0}: service started, waiting connection ...", fullServiceName);
+                Log.Comment(CommentType.Info, "Service started, waiting connection ...");
             }
             catch (HttpListenerException ex)
             {
                 Status = Status.NotInitialized;
-                Log.LogCommentM(CommentType.Error, "{0}run into an error: " + ex.Message, fullServiceName);
+                Log.Comment(CommentType.Error, "Service run into an error: " + ex.Message);
             }
         }
 
@@ -248,13 +209,13 @@ namespace SiweiSoft.SAPIService.Core
                     }
                     catch (HttpListenerException)
                     {
-                        Log.LogCommentC(CommentType.Warn, "{0}: service threads stoped.", fullServiceName);
+                        Log.Comment(CommentType.Warn, "Service threads stoped.");
                     }
                 }
             }
             else
             {
-                Log.LogCommentC(CommentType.Error, "{0}: service was not initialized or not initialized successfully.", fullServiceName);
+                Log.Comment(CommentType.Error, "Service was not initialized or not initialized successfully.");
             }
         }
 
@@ -308,7 +269,7 @@ namespace SiweiSoft.SAPIService.Core
         {
             Status = Status.Stopped;
             listener.Stop();
-            Log.LogCommentM(CommentType.Warn, "{0}: service stoped.", fullServiceName);
+            Log.Comment(CommentType.Warn, "Service stoped.");
         }
 
         /// <summary>
@@ -321,14 +282,14 @@ namespace SiweiSoft.SAPIService.Core
             string cookieString = Guid.NewGuid().ToString();
             Cookie cookie = new Cookie(cookieName, cookieString, "/")
             {
-                Expires = expires ?? DateTime.Now.AddSeconds(cookieExpires)
+                Expires = expires ?? DateTime.Now.AddSeconds(cookieExpires??3600)
             };
             context.Response.SetCookie(cookie);
             TSession session = new TSession()
             {
                 IsAuthorized = false
             };
-            session.ResetExpireDate(cookieExpires);
+            session.ResetExpireDate(cookieExpires ?? 3600);
             SessionsDictionary.Add(cookieString, session);
             return session;
         }

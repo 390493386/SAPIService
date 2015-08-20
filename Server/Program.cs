@@ -8,10 +8,9 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            SapiService service = new SapiService("192.168.0.105", 80, serviceName: "sb", rootPath: "SAPI");
+            SapiService service = new SapiService("192.168.0.105", 80, rootPath: "SAPI");
 
             Log.LogEventChildThread += LogCommentC;
-            Log.LogEventMainThread += LogCommentM;
 
             service.Initialize();
             service.Process<UserSession>();

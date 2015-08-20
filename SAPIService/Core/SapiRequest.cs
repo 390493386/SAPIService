@@ -46,7 +46,7 @@ namespace SiweiSoft.SAPIService.Core
                 ActionInfo actionInfo = null;
                 Controller controllerInstance = InitializeControllerInstance(out actionInfo);
                 if (controllerInstance == null || actionInfo == null)
-                    Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+                    Log.Comment(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
                 else
                 {
                     if (actionInfo.NeedAuthorize && (session == null || !session.IsAuthorized))
@@ -101,7 +101,7 @@ namespace SiweiSoft.SAPIService.Core
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;
-                Log.LogCommentC(CommentType.Error, "Unknow exception: " + ex.Message);
+                Log.Comment(CommentType.Error, "Unknow exception: " + ex.Message);
             }
             finally
             {
@@ -195,7 +195,7 @@ namespace SiweiSoft.SAPIService.Core
                 }
             }
             else
-                Log.LogCommentC(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+                Log.Comment(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
             return controller;
         }
     }

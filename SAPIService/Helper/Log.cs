@@ -17,9 +17,6 @@ namespace SiweiSoft.SAPIService.Helper
         //Delegate for log
         public delegate void LogHandler(CommentType type, string comment);
 
-        //Event for log -- In main thread
-        public static event LogHandler LogEventMainThread;
-
         //Event for log -- In child thread
         public static event LogHandler LogEventChildThread;
 
@@ -29,7 +26,7 @@ namespace SiweiSoft.SAPIService.Helper
         /// <param name="type"></param>
         /// <param name="message"></param>
         /// <param name="arg"></param>
-        public static void LogCommentC(CommentType type, string message, params object[] arg)
+        public static void Comment(CommentType type, string message, params object[] arg)
         {
             if (LogEventChildThread != null)
             {
@@ -37,20 +34,6 @@ namespace SiweiSoft.SAPIService.Helper
                     LogEventChildThread(type, message);
                 else
                     LogEventChildThread(type, String.Format(message, arg));
-            }
-        }
-
-        /// <summary>
-        /// Log comment in main thread
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="message"></param>
-        /// <param name="arg"></param>
-        public static void LogCommentM(CommentType type, string message, params object[] arg)
-        {
-            if (LogEventMainThread != null)
-            {
-                LogEventMainThread(type, String.Format(message, arg));
             }
         }
     }

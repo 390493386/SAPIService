@@ -36,7 +36,7 @@ namespace SiweiSoft.SAPIService.Core
                         if (!Actions.ContainsKey(actionAttribute.Alias))
                             Actions.Add(actionAttribute.Alias, new ActionInfo(action, actionAttribute.NeedAuthorize));
                         else
-                            Log.LogCommentC(CommentType.Warn, "There exist action alias with ths same name.");
+                            Log.Comment(CommentType.Warn, "There exist action alias with ths same name.");
                     }
                 }
             }

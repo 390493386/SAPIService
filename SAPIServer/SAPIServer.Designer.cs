@@ -31,33 +31,37 @@
             this.serverTab = new System.Windows.Forms.TabControl();
             this.servicePage = new System.Windows.Forms.TabPage();
             this.SvcStartStop = new System.Windows.Forms.Button();
-            this.logsBox = new SiweiSoft.SAPIServer.SListBox();
             this.configPage = new System.Windows.Forms.TabPage();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.expire = new System.Windows.Forms.Label();
+            this.cookie = new System.Windows.Forms.Label();
             this.SaveConfig = new System.Windows.Forms.Button();
             this.svcConfig = new System.Windows.Forms.GroupBox();
+            this.path = new System.Windows.Forms.Label();
+            this.oHost = new System.Windows.Forms.Label();
+            this.serviceName = new System.Windows.Forms.TextBox();
+            this.svc = new System.Windows.Forms.Label();
+            this.rootPath = new System.Windows.Forms.TextBox();
+            this.root = new System.Windows.Forms.Label();
             this.localPort = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.localIPAddress = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.localhost = new System.Windows.Forms.Label();
             this.svConfig = new System.Windows.Forms.GroupBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.selfStartService = new System.Windows.Forms.CheckBox();
             this.serverConfig = new System.Windows.Forms.Label();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label8 = new System.Windows.Forms.Label();
+            this.selfStartServer = new System.Windows.Forms.CheckBox();
+            this.originHost = new System.Windows.Forms.TextBox();
+            this.fileSvPath = new System.Windows.Forms.TextBox();
+            this.cookieName = new System.Windows.Forms.TextBox();
+            this.cookieExpires = new System.Windows.Forms.TextBox();
+            this.logsBox = new SiweiSoft.SAPIServer.SListBox();
+            this.localIPAddress = new System.Windows.Forms.TextBox();
             this.serverTab.SuspendLayout();
             this.servicePage.SuspendLayout();
             this.configPage.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.svcConfig.SuspendLayout();
             this.svConfig.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // serverTab
@@ -92,16 +96,6 @@
             this.SvcStartStop.UseVisualStyleBackColor = true;
             this.SvcStartStop.Click += new System.EventHandler(this.SvcStartStop_Click);
             // 
-            // logsBox
-            // 
-            this.logsBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.logsBox.FormattingEnabled = true;
-            this.logsBox.ItemHeight = 12;
-            this.logsBox.Location = new System.Drawing.Point(6, 7);
-            this.logsBox.Name = "logsBox";
-            this.logsBox.Size = new System.Drawing.Size(621, 376);
-            this.logsBox.TabIndex = 0;
-            // 
             // configPage
             // 
             this.configPage.Controls.Add(this.groupBox1);
@@ -116,187 +110,225 @@
             this.configPage.Text = "系统配置";
             this.configPage.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.cookieExpires);
+            this.groupBox1.Controls.Add(this.cookieName);
+            this.groupBox1.Controls.Add(this.expire);
+            this.groupBox1.Controls.Add(this.cookie);
+            this.groupBox1.Location = new System.Drawing.Point(7, 295);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(620, 82);
+            this.groupBox1.TabIndex = 3;
+            this.groupBox1.TabStop = false;
+            // 
+            // expire
+            // 
+            this.expire.AutoSize = true;
+            this.expire.Location = new System.Drawing.Point(24, 54);
+            this.expire.Name = "expire";
+            this.expire.Size = new System.Drawing.Size(65, 12);
+            this.expire.TabIndex = 13;
+            this.expire.Text = "过期时间：";
+            // 
+            // cookie
+            // 
+            this.cookie.AutoSize = true;
+            this.cookie.Location = new System.Drawing.Point(12, 25);
+            this.cookie.Name = "cookie";
+            this.cookie.Size = new System.Drawing.Size(77, 12);
+            this.cookie.TabIndex = 12;
+            this.cookie.Text = "cookie名称：";
+            // 
             // SaveConfig
             // 
-            this.SaveConfig.Location = new System.Drawing.Point(7, 394);
+            this.SaveConfig.Location = new System.Drawing.Point(7, 389);
             this.SaveConfig.Name = "SaveConfig";
             this.SaveConfig.Size = new System.Drawing.Size(104, 23);
             this.SaveConfig.TabIndex = 2;
             this.SaveConfig.Text = "保存";
             this.SaveConfig.UseVisualStyleBackColor = true;
+            this.SaveConfig.Click += new System.EventHandler(this.SaveConfig_Click);
             // 
             // svcConfig
             // 
-            this.svcConfig.Controls.Add(this.label6);
-            this.svcConfig.Controls.Add(this.label5);
-            this.svcConfig.Controls.Add(this.textBox2);
-            this.svcConfig.Controls.Add(this.label4);
-            this.svcConfig.Controls.Add(this.textBox1);
-            this.svcConfig.Controls.Add(this.label3);
+            this.svcConfig.Controls.Add(this.localIPAddress);
+            this.svcConfig.Controls.Add(this.fileSvPath);
+            this.svcConfig.Controls.Add(this.originHost);
+            this.svcConfig.Controls.Add(this.path);
+            this.svcConfig.Controls.Add(this.oHost);
+            this.svcConfig.Controls.Add(this.serviceName);
+            this.svcConfig.Controls.Add(this.svc);
+            this.svcConfig.Controls.Add(this.rootPath);
+            this.svcConfig.Controls.Add(this.root);
             this.svcConfig.Controls.Add(this.localPort);
             this.svcConfig.Controls.Add(this.label2);
-            this.svcConfig.Controls.Add(this.localIPAddress);
-            this.svcConfig.Controls.Add(this.label1);
-            this.svcConfig.Location = new System.Drawing.Point(7, 92);
+            this.svcConfig.Controls.Add(this.localhost);
+            this.svcConfig.Location = new System.Drawing.Point(7, 99);
             this.svcConfig.Name = "svcConfig";
             this.svcConfig.Size = new System.Drawing.Size(620, 183);
             this.svcConfig.TabIndex = 1;
             this.svcConfig.TabStop = false;
             // 
+            // path
+            // 
+            this.path.AutoSize = true;
+            this.path.Location = new System.Drawing.Point(24, 156);
+            this.path.Name = "path";
+            this.path.Size = new System.Drawing.Size(65, 12);
+            this.path.TabIndex = 11;
+            this.path.Text = "文件路径：";
+            // 
+            // oHost
+            // 
+            this.oHost.AutoSize = true;
+            this.oHost.Location = new System.Drawing.Point(36, 123);
+            this.oHost.Name = "oHost";
+            this.oHost.Size = new System.Drawing.Size(53, 12);
+            this.oHost.TabIndex = 10;
+            this.oHost.Text = "源主机：";
+            // 
+            // serviceName
+            // 
+            this.serviceName.Location = new System.Drawing.Point(122, 86);
+            this.serviceName.Name = "serviceName";
+            this.serviceName.Size = new System.Drawing.Size(221, 21);
+            this.serviceName.TabIndex = 9;
+            // 
+            // svc
+            // 
+            this.svc.AutoSize = true;
+            this.svc.Location = new System.Drawing.Point(24, 90);
+            this.svc.Name = "svc";
+            this.svc.Size = new System.Drawing.Size(65, 12);
+            this.svc.TabIndex = 8;
+            this.svc.Text = "服务名称：";
+            // 
+            // rootPath
+            // 
+            this.rootPath.Location = new System.Drawing.Point(122, 53);
+            this.rootPath.Name = "rootPath";
+            this.rootPath.Size = new System.Drawing.Size(221, 21);
+            this.rootPath.TabIndex = 7;
+            // 
+            // root
+            // 
+            this.root.AutoSize = true;
+            this.root.Location = new System.Drawing.Point(36, 57);
+            this.root.Name = "root";
+            this.root.Size = new System.Drawing.Size(53, 12);
+            this.root.TabIndex = 6;
+            this.root.Text = "根目录：";
+            // 
             // localPort
             // 
-            this.localPort.Location = new System.Drawing.Point(278, 21);
+            this.localPort.Location = new System.Drawing.Point(295, 20);
             this.localPort.Name = "localPort";
-            this.localPort.Size = new System.Drawing.Size(46, 21);
+            this.localPort.Size = new System.Drawing.Size(48, 21);
             this.localPort.TabIndex = 5;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(260, 24);
+            this.label2.Location = new System.Drawing.Point(279, 23);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(11, 12);
             this.label2.TabIndex = 4;
             this.label2.Text = ":";
             // 
-            // localIPAddress
+            // localhost
             // 
-            this.localIPAddress.FormattingEnabled = true;
-            this.localIPAddress.Items.AddRange(new object[] {
-            "localhost",
-            "127.0.0.1"});
-            this.localIPAddress.Location = new System.Drawing.Point(103, 21);
-            this.localIPAddress.Name = "localIPAddress";
-            this.localIPAddress.Size = new System.Drawing.Size(150, 20);
-            this.localIPAddress.TabIndex = 3;
-            this.localIPAddress.Text = "localhost";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 25);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(65, 12);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "主机配置：";
+            this.localhost.AutoSize = true;
+            this.localhost.Location = new System.Drawing.Point(24, 24);
+            this.localhost.Name = "localhost";
+            this.localhost.Size = new System.Drawing.Size(65, 12);
+            this.localhost.TabIndex = 2;
+            this.localhost.Text = "主机配置：";
             // 
             // svConfig
             // 
-            this.svConfig.Controls.Add(this.checkBox2);
+            this.svConfig.Controls.Add(this.selfStartService);
             this.svConfig.Controls.Add(this.serverConfig);
-            this.svConfig.Controls.Add(this.checkBox1);
+            this.svConfig.Controls.Add(this.selfStartServer);
             this.svConfig.Location = new System.Drawing.Point(7, 7);
             this.svConfig.Name = "svConfig";
             this.svConfig.Size = new System.Drawing.Size(620, 79);
             this.svConfig.TabIndex = 0;
             this.svConfig.TabStop = false;
             // 
-            // checkBox2
+            // selfStartService
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(103, 43);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(84, 16);
-            this.checkBox2.TabIndex = 2;
-            this.checkBox2.Text = "服务自启动";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.selfStartService.AutoSize = true;
+            this.selfStartService.Location = new System.Drawing.Point(122, 45);
+            this.selfStartService.Name = "selfStartService";
+            this.selfStartService.Size = new System.Drawing.Size(84, 16);
+            this.selfStartService.TabIndex = 2;
+            this.selfStartService.Text = "服务自启动";
+            this.selfStartService.UseVisualStyleBackColor = true;
             // 
             // serverConfig
             // 
             this.serverConfig.AutoSize = true;
-            this.serverConfig.Location = new System.Drawing.Point(12, 22);
+            this.serverConfig.Location = new System.Drawing.Point(24, 24);
             this.serverConfig.Name = "serverConfig";
             this.serverConfig.Size = new System.Drawing.Size(65, 12);
             this.serverConfig.TabIndex = 1;
             this.serverConfig.Text = "系统配置：";
             // 
-            // checkBox1
+            // selfStartServer
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(103, 21);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(72, 16);
-            this.checkBox1.TabIndex = 0;
-            this.checkBox1.Text = "开机运行";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.selfStartServer.AutoSize = true;
+            this.selfStartServer.Location = new System.Drawing.Point(122, 23);
+            this.selfStartServer.Name = "selfStartServer";
+            this.selfStartServer.Size = new System.Drawing.Size(72, 16);
+            this.selfStartServer.TabIndex = 0;
+            this.selfStartServer.Text = "开机运行";
+            this.selfStartServer.UseVisualStyleBackColor = true;
             // 
-            // label3
+            // originHost
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 56);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(65, 12);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "根 目 录：";
+            this.originHost.Location = new System.Drawing.Point(122, 119);
+            this.originHost.Name = "originHost";
+            this.originHost.Size = new System.Drawing.Size(221, 21);
+            this.originHost.TabIndex = 12;
             // 
-            // textBox1
+            // fileSvPath
             // 
-            this.textBox1.Location = new System.Drawing.Point(103, 49);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(221, 21);
-            this.textBox1.TabIndex = 7;
+            this.fileSvPath.Location = new System.Drawing.Point(122, 152);
+            this.fileSvPath.Name = "fileSvPath";
+            this.fileSvPath.Size = new System.Drawing.Size(221, 21);
+            this.fileSvPath.TabIndex = 13;
             // 
-            // textBox2
+            // cookieName
             // 
-            this.textBox2.Location = new System.Drawing.Point(105, 84);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(221, 21);
-            this.textBox2.TabIndex = 9;
+            this.cookieName.Location = new System.Drawing.Point(122, 21);
+            this.cookieName.Name = "cookieName";
+            this.cookieName.Size = new System.Drawing.Size(221, 21);
+            this.cookieName.TabIndex = 14;
             // 
-            // label4
+            // cookieExpires
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 87);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(65, 12);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "服务名称：";
+            this.cookieExpires.Location = new System.Drawing.Point(122, 50);
+            this.cookieExpires.Name = "cookieExpires";
+            this.cookieExpires.Size = new System.Drawing.Size(221, 21);
+            this.cookieExpires.TabIndex = 15;
             // 
-            // label5
+            // logsBox
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 125);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(65, 12);
-            this.label5.TabIndex = 10;
-            this.label5.Text = "源 主 机：";
+            this.logsBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.logsBox.FormattingEnabled = true;
+            this.logsBox.ItemHeight = 12;
+            this.logsBox.Location = new System.Drawing.Point(6, 7);
+            this.logsBox.Name = "logsBox";
+            this.logsBox.Size = new System.Drawing.Size(621, 376);
+            this.logsBox.TabIndex = 0;
             // 
-            // label6
+            // localIPAddress
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 158);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(65, 12);
-            this.label6.TabIndex = 11;
-            this.label6.Text = "文件路径：";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 17);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(83, 12);
-            this.label7.TabIndex = 12;
-            this.label7.Text = "cookie 名称：";
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.label8);
-            this.groupBox1.Controls.Add(this.label7);
-            this.groupBox1.Location = new System.Drawing.Point(7, 281);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(620, 73);
-            this.groupBox1.TabIndex = 3;
-            this.groupBox1.TabStop = false;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 45);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(83, 12);
-            this.label8.TabIndex = 13;
-            this.label8.Text = "过 期 时 间：";
+            this.localIPAddress.Location = new System.Drawing.Point(122, 20);
+            this.localIPAddress.Name = "localIPAddress";
+            this.localIPAddress.Size = new System.Drawing.Size(151, 21);
+            this.localIPAddress.TabIndex = 14;
             // 
             // SAPIServer
             // 
@@ -309,12 +341,12 @@
             this.serverTab.ResumeLayout(false);
             this.servicePage.ResumeLayout(false);
             this.configPage.ResumeLayout(false);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.svcConfig.ResumeLayout(false);
             this.svcConfig.PerformLayout();
             this.svConfig.ResumeLayout(false);
             this.svConfig.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -329,22 +361,26 @@
         private System.Windows.Forms.GroupBox svConfig;
         private System.Windows.Forms.Button SaveConfig;
         private System.Windows.Forms.GroupBox svcConfig;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.Label localhost;
+        private System.Windows.Forms.CheckBox selfStartService;
         private System.Windows.Forms.Label serverConfig;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox selfStartServer;
         private System.Windows.Forms.TextBox localPort;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox localIPAddress;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox rootPath;
+        private System.Windows.Forms.Label root;
+        private System.Windows.Forms.Label cookie;
+        private System.Windows.Forms.Label path;
+        private System.Windows.Forms.Label oHost;
+        private System.Windows.Forms.TextBox serviceName;
+        private System.Windows.Forms.Label svc;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label expire;
+        private System.Windows.Forms.TextBox cookieExpires;
+        private System.Windows.Forms.TextBox cookieName;
+        private System.Windows.Forms.TextBox fileSvPath;
+        private System.Windows.Forms.TextBox originHost;
+        private System.Windows.Forms.TextBox localIPAddress;
     }
 }
 
