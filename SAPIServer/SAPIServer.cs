@@ -20,7 +20,7 @@ namespace SiweiSoft.SAPIServer
             RefreshSystemConfiguration();
 
             //打印日志事件
-            Log.LogEventChildThread += LogComment;
+            Log.LogEvent += LogComment;
         }
 
         private void SvcStartStop_Click(object sender, EventArgs e)
@@ -40,12 +40,12 @@ namespace SiweiSoft.SAPIServer
                 serviceInstance.Initialize();
                 if (serviceInstance.Status == Status.NotInitialized)
                 {
-                    this.LogCommentM(CommentType.Error, "服务启动失败。");
+                    Log.Comment(CommentType.Error, "服务启动失败。");
                     return;
                 }
                 serviceThread = new Thread(serviceInstance.Process<Session>);
                 serviceThread.Start();
-                this.LogCommentM(CommentType.Info, string.Format("服务正在运行。"));
+                Log.Comment(CommentType.Info, string.Format("服务正在运行。"));
             }
         }
 

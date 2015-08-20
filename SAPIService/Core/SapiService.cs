@@ -38,6 +38,11 @@ namespace SiweiSoft.SAPIService.Core
         private string originHost;
 
         /// <summary>
+        /// With cross origin?
+        /// </summary>
+        private bool withCrossOrigin;
+
+        /// <summary>
         /// File server path
         /// </summary>
         private string fileServerPath;
@@ -48,9 +53,14 @@ namespace SiweiSoft.SAPIService.Core
         private string cookieName;
 
         /// <summary>
+        /// With cookie?
+        /// </summary>
+        private bool withCookie;
+
+        /// <summary>
         /// Cookies expires time(seconds)
         /// </summary>
-        private int? cookieExpires;
+        private int cookieExpires;
 
         /// <summary>
         /// Controllers assembly(full name)
@@ -88,6 +98,15 @@ namespace SiweiSoft.SAPIService.Core
 
         #endregion internal static fields
 
+        #region private const variable, for default values
+
+        /// <summary>
+        /// Default cookie expires(seconds)
+        /// </summary>
+        private const int defaultCookieExpires = 3600;
+
+        #endregion private const variable, for default values
+
         #region public properties
 
         /// <summary>
@@ -104,6 +123,8 @@ namespace SiweiSoft.SAPIService.Core
         {
             ipAddress = "localhost";
             port = 8885;
+            withCrossOrigin = false;
+            withCookie = false;
 
             Status = Status.NotInitialized;
         }
@@ -130,9 +151,13 @@ namespace SiweiSoft.SAPIService.Core
             this.port = port;
             RootPath = rootPath;
             this.originHost = originHost;
+            if (!String.IsNullOrEmpty(originHost))
+                withCrossOrigin = true;
             this.fileServerPath = fileServerPath;
             this.cookieName = cookieName;
-            this.cookieExpires = cookieExpires;
+            if (!String.IsNullOrEmpty(cookieName))
+                withCookie = true;
+            this.cookieExpires = cookieExpires ?? defaultCookieExpires;
             this.controllersAssembly = controllersAssembly;
             ServerConfigs = serverConfig;
 
@@ -154,7 +179,7 @@ namespace SiweiSoft.SAPIService.Core
             listener.Prefixes.Add(string.Format("http://{0}:{1}/" +
                 (String.IsNullOrEmpty(RootPath) ? null : (RootPath + "/")), ipAddress, port.ToString()));
             Status = Status.Ready;
-            Log.Comment(CommentType.Info, "Service binded to ip:{0} and port{1}.", ipAddress, port.ToString());
+            Log.Comment(CommentType.Info, "Service binded to ip:{0} and port {1}.", ipAddress, port.ToString());
 
             try
             {
@@ -182,7 +207,8 @@ namespace SiweiSoft.SAPIService.Core
                         }
                     }
                 }
-
+                Log.Comment(CommentType.Info, "With cross origin: " + (withCrossOrigin ? "yes." : "no."));
+                Log.Comment(CommentType.Info, "With cookie: " + (withCookie ? "yes." : "no."));
                 Log.Comment(CommentType.Info, "Service started, waiting connection ...");
             }
             catch (HttpListenerException ex)
@@ -235,10 +261,11 @@ namespace SiweiSoft.SAPIService.Core
             else
             {
                 TSession session = null;
-                if (!String.IsNullOrEmpty(cookieName))
+                if (withCookie)
                 {
                     //Set cros options
-                    requestContext.Response.Headers.Add("Access-Control-Allow-Credentials: true");
+                    if (withCrossOrigin)
+                        requestContext.Response.Headers.Add("Access-Control-Allow-Credentials: true");
 
                     //Get the cookie from the request
                     Cookie cookie = requestContext.Request.Cookies[cookieName];
@@ -255,7 +282,8 @@ namespace SiweiSoft.SAPIService.Core
                             session = this.GenerateNewSession<TSession>(requestContext, expires: cookie.Expires);
                     }
                 }
-                requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + originHost);
+                if (withCrossOrigin)
+                    requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + originHost);
 
                 SapiRequest request = new SapiRequest(requestContext, session);
                 request.Response();
@@ -282,14 +310,14 @@ namespace SiweiSoft.SAPIService.Core
             string cookieString = Guid.NewGuid().ToString();
             Cookie cookie = new Cookie(cookieName, cookieString, "/")
             {
-                Expires = expires ?? DateTime.Now.AddSeconds(cookieExpires??3600)
+                Expires = expires ?? DateTime.Now.AddSeconds(cookieExpires)
             };
             context.Response.SetCookie(cookie);
             TSession session = new TSession()
             {
                 IsAuthorized = false
             };
-            session.ResetExpireDate(cookieExpires ?? 3600);
+            session.ResetExpireDate(cookieExpires);
             SessionsDictionary.Add(cookieString, session);
             return session;
         }

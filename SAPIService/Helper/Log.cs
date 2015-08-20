@@ -18,7 +18,7 @@ namespace SiweiSoft.SAPIService.Helper
         public delegate void LogHandler(CommentType type, string comment);
 
         //Event for log -- In child thread
-        public static event LogHandler LogEventChildThread;
+        public static event LogHandler LogEvent;
 
         /// <summary>
         /// Log comment in child thread
@@ -28,12 +28,12 @@ namespace SiweiSoft.SAPIService.Helper
         /// <param name="arg"></param>
         public static void Comment(CommentType type, string message, params object[] arg)
         {
-            if (LogEventChildThread != null)
+            if (LogEvent != null)
             {
                 if (arg.Length == 0)
-                    LogEventChildThread(type, message);
+                    LogEvent(type, message);
                 else
-                    LogEventChildThread(type, String.Format(message, arg));
+                    LogEvent(type, String.Format(message, arg));
             }
         }
     }
