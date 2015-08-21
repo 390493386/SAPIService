@@ -40,6 +40,9 @@ namespace SiweiSoft.SAPIService.Core
         }
     }
 
+    /// <summary>
+    /// 未授权请求
+    /// </summary>
     public class ActionNotAuthorized : ActionResult
     {
         public ActionNotAuthorized()

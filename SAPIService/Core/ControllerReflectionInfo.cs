@@ -8,7 +8,7 @@ namespace SiweiSoft.SAPIService.Core
     internal class ControllerReflectionInfo
     {
         /// <summary>
-        /// Controller instance
+        /// Controller实例
         /// </summary>
         public Object ControllerInstance { get; set; }
 
@@ -36,7 +36,8 @@ namespace SiweiSoft.SAPIService.Core
                         if (!Actions.ContainsKey(actionAttribute.Alias))
                             Actions.Add(actionAttribute.Alias, new ActionInfo(action, actionAttribute.NeedAuthorize));
                         else
-                            Log.Comment(CommentType.Warn, "There exist action alias with ths same name.");
+                            Log.Comment(CommentType.Warn, "Controller（{0}）中存在同名Action（{1}），可能引起冲突。",
+                                controllerType.FullName, actionAttribute.Alias);
                     }
                 }
             }

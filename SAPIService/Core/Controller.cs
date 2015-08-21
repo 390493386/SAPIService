@@ -5,7 +5,7 @@ namespace SiweiSoft.SAPIService.Core
     public abstract class Controller
     {
         /// <summary>
-        /// Server configurations
+        /// 服务器配置
         /// </summary>
         public Dictionary<string, object> ServerConfigs
         {
@@ -14,7 +14,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Paramenters
+        /// 请求参数
         /// </summary>
         public Dictionary<string, object> Parameters
         {
@@ -23,7 +23,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Session
+        /// 会话
         /// </summary>
         public Session Session
         {
@@ -31,6 +31,10 @@ namespace SiweiSoft.SAPIService.Core
             set;
         }
 
+        /// <summary>
+        /// 重写克隆方法
+        /// </summary>
+        /// <returns></returns>
         public virtual Controller Clone()
         {
             return (Controller)this.MemberwiseClone();

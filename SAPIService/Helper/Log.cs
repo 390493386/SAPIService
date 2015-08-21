@@ -3,7 +3,7 @@
 namespace SiweiSoft.SAPIService.Helper
 {
     /// <summary>
-    /// Comment type
+    /// Comment类型
     /// </summary>
     public enum CommentType
     {
@@ -14,14 +14,14 @@ namespace SiweiSoft.SAPIService.Helper
 
     public class Log
     {
-        //Delegate for log
+        //Log委托
         public delegate void LogHandler(CommentType type, string comment);
 
-        //Event for log -- In child thread
+        //Log事件
         public static event LogHandler LogEvent;
 
         /// <summary>
-        /// Log comment in child thread
+        /// 显示Comment
         /// </summary>
         /// <param name="type"></param>
         /// <param name="message"></param>

@@ -3,26 +3,26 @@
 namespace SiweiSoft.SAPIService.Core
 {
     /// <summary>
-    /// Action attribute
+    /// Action特性
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class ActionAttribute : Attribute
     {
         /// <summary>
-        /// Action alias
+        /// Action别名
         /// </summary>
         public string Alias { get; set; }
 
         /// <summary>
-        /// Need authorization
+        /// 是否需要授权（登陆）
         /// </summary>
         public bool NeedAuthorize { get; set; }
 
         /// <summary>
-        /// Construcor
+        /// 构造方法
         /// </summary>
-        /// <param name="alias">Alias</param>
-        /// <param name="needAuthorize">Need authorize</param>
+        /// <param name="alias">Action别名</param>
+        /// <param name="needAuthorize">是否需要授权</param>
         public ActionAttribute(string alias, bool needAuthorize = true)
         {
             Alias = alias;

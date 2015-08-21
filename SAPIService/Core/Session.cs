@@ -3,17 +3,17 @@
 namespace SiweiSoft.SAPIService.Core
 {
     /// <summary>
-    /// For user session
+    /// 用户会话
     /// </summary>
     public class Session
     {
         /// <summary>
-        /// Session expire date
+        /// 会话过期日期
         /// </summary>
         private DateTime ExpireDate;
 
         /// <summary>
-        /// Is authorized
+        /// 会话是否授权
         /// </summary>
         public bool IsAuthorized
         {
@@ -22,7 +22,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Reset session expire date
+        /// 重设会话过期日期
         /// </summary>
         /// <param name="seconds"></param>
         public void ResetExpireDate(int seconds)
@@ -31,7 +31,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Is session expired
+        /// 会话是否过期
         /// </summary>
         /// <returns></returns>
         public bool IsSessionExpired()

@@ -8,7 +8,7 @@ using System.Threading;
 namespace SiweiSoft.SAPIService.Core
 {
     /// <summary>
-    /// Service status
+    /// 服务状态
     /// </summary>
     public enum Status
     {
@@ -22,54 +22,36 @@ namespace SiweiSoft.SAPIService.Core
     {
         #region private fields
 
-        /// <summary>
-        /// Binded IP
-        /// </summary>
-        private string ipAddress;
+        //待绑定IP
+        private string _ipAddress;
 
-        /// <summary>
-        /// Listened port
-        /// </summary>
-        private int port;
+        //监听端口
+        private int _port;
 
-        /// <summary>
-        /// Cross origin host
-        /// </summary>
-        private string originHost;
+        //跨源主机
+        private string _originHost;
 
-        /// <summary>
-        /// With cross origin?
-        /// </summary>
-        private bool withCrossOrigin;
+        //是否跨源?
+        private bool _withCrossOrigin;
 
-        /// <summary>
-        /// File server path
-        /// </summary>
-        private string fileServerPath;
+        //文件存放路径
+        private string _fileServerPath;
 
         /// <summary>
         /// Cookie name
         /// </summary>
-        private string cookieName;
+        private string _cookieName;
 
-        /// <summary>
-        /// With cookie?
-        /// </summary>
-        private bool withCookie;
+        //Cookie名字
+        private bool _withCookie;
 
-        /// <summary>
-        /// Cookies expires time(seconds)
-        /// </summary>
-        private int cookieExpires;
+        //Cookie过期时间（秒）
+        private int _cookieExpires;
 
-        /// <summary>
-        /// Controllers assembly(full name)
-        /// </summary>
-        private string controllersAssembly;
+        //外部Controller程序集
+        private string _controllersAssembly;
 
-        /// <summary>
-        /// Http listener
-        /// </summary>
+        //Http监听器
         private HttpListener listener;
 
         #endregion private fields
@@ -77,22 +59,22 @@ namespace SiweiSoft.SAPIService.Core
         #region internal static fields
 
         /// <summary>
-        /// Root path of server, for different site
+        /// 服务根目录
         /// </summary>
         internal static string RootPath;
 
         /// <summary>
-        /// Server configurations
+        /// 服务器配置
         /// </summary>
         internal static Dictionary<string, object> ServerConfigs;
 
         /// <summary>
-        /// Controllers informations
+        /// Controllers信息
         /// </summary>
         internal static Dictionary<string, ControllerReflectionInfo> ControllersInfos;
 
         /// <summary>
-        /// Sessions dictionary
+        /// Sessions列表
         /// </summary>
         internal static Dictionary<string, Session> SessionsDictionary;
 
@@ -100,9 +82,7 @@ namespace SiweiSoft.SAPIService.Core
 
         #region private const variable, for default values
 
-        /// <summary>
-        /// Default cookie expires(seconds)
-        /// </summary>
+        //系统默认cookie过期时间，单位：秒
         private const int defaultCookieExpires = 3600;
 
         #endregion private const variable, for default values
@@ -110,87 +90,108 @@ namespace SiweiSoft.SAPIService.Core
         #region public properties
 
         /// <summary>
-        /// Service status
+        /// 服务状态
         /// </summary>
         public Status Status { get; private set; }
 
         #endregion public properties
 
         /// <summary>
-        /// Constructor without arguement
+        /// 无参构造方法
         /// </summary>
         public SapiService()
         {
-            ipAddress = "localhost";
-            port = 8885;
-            withCrossOrigin = false;
-            withCookie = false;
+            _ipAddress = "localhost";
+            _port = 8885;
+            _withCrossOrigin = false;
+            _withCookie = false;
 
             Status = Status.NotInitialized;
         }
 
         /// <summary>
-        /// Constructor with arguements
+        /// 带参构造方法
         /// </summary>
-        /// <param name="ipAddress">IP address on local host</param>
-        /// <param name="port">Available port on local host</param>
-        /// <param name="RootPath">Root path, for different web root path</param>
-        /// <param name="originHost">Cross origin host</param>
-        /// <param name="fileServerPath">File server path</param>
-        /// <param name="cookieName">Cookie name</param>
-        /// <param name="cookieExpires">Cookie expires</param>
-        /// <param name="controllersAssembly">Controllers assembly</param>
-        /// <param name="serverConfig">Server configurations</param>
+        /// <param name="ipAddress">本地IP地址</param>
+        /// <param name="port">可用端口</param>
+        /// <param name="RootPath">服务根目录</param>
+        /// <param name="originHost">跨源主机地址，不设定表示不需跨源</param>
+        /// <param name="fileServerPath">文件存放路径，上传文件请求用到</param>
+        /// <param name="cookieName">Cookie名字，不设定表示不需Cookie支持</param>
+        /// <param name="cookieExpires">Cookie过期时间，单位：秒</param>
+        /// <param name="controllersAssembly">需加载的controllers所在的程序集</param>
+        /// <param name="serverConfig">服务器配置</param>
         public SapiService(string ipAddress, int port,
             string rootPath = null, string originHost = null,
             string fileServerPath = null, string cookieName = null,
             int? cookieExpires = null, string controllersAssembly = null,
             Dictionary<string, object> serverConfig = null)
         {
-            this.ipAddress = ipAddress;
-            this.port = port;
-            RootPath = rootPath;
-            this.originHost = originHost;
-            if (!String.IsNullOrEmpty(originHost))
-                withCrossOrigin = true;
-            this.fileServerPath = fileServerPath;
-            this.cookieName = cookieName;
-            if (!String.IsNullOrEmpty(cookieName))
-                withCookie = true;
-            this.cookieExpires = cookieExpires ?? defaultCookieExpires;
-            this.controllersAssembly = controllersAssembly;
+            _ipAddress = ipAddress;
+            _port = port;
+
+            if (rootPath != null)
+            {
+                rootPath = rootPath.Trim(' ');
+                RootPath = String.IsNullOrEmpty(rootPath) ? null : rootPath;
+            }
+            if (originHost != null)
+            {
+                originHost = originHost.Trim(' ');
+                if (!String.IsNullOrEmpty(originHost))
+                {
+                    _originHost = originHost;
+                    _withCrossOrigin = true;
+                }
+            }
+            if (fileServerPath != null)
+            {
+                fileServerPath = fileServerPath.Trim(' ');
+                _fileServerPath = String.IsNullOrEmpty(fileServerPath) ? null : fileServerPath;
+            }
+            if (cookieName != null)
+            {
+                cookieName = cookieName.Trim(' ');
+                if (!String.IsNullOrEmpty(cookieName))
+                {
+                    _cookieName = cookieName;
+                    _withCookie = true;
+                }
+            }
+            _cookieExpires = cookieExpires ?? defaultCookieExpires;
+            _controllersAssembly = controllersAssembly;
             ServerConfigs = serverConfig;
 
             Status = Status.NotInitialized;
         }
 
         /// <summary>
-        /// Initialize web service
+        /// 初始化服务
         /// </summary>
         public void Initialize()
         {
-            if (String.IsNullOrEmpty(ipAddress) || port < 1)
+            if (String.IsNullOrEmpty(_ipAddress) || _port < 1)
             {
-                Log.Comment(CommentType.Error, "Service configurations error.");
+                Log.Comment(CommentType.Error, "服务器配置错误，IP地址或者端口不正确。");
                 return;
             }
-            Log.Comment(CommentType.Info, "Initializing service ...");
+            Log.Comment(CommentType.Info, "正在初始化服务。。。");
             listener = new HttpListener();
             listener.Prefixes.Add(string.Format("http://{0}:{1}/" +
-                (String.IsNullOrEmpty(RootPath) ? null : (RootPath + "/")), ipAddress, port.ToString()));
+                (String.IsNullOrEmpty(RootPath) ? null : (RootPath + "/")), _ipAddress, _port.ToString()));
             Status = Status.Ready;
-            Log.Comment(CommentType.Info, "Service binded to ip:{0} and port {1}.", ipAddress, port.ToString());
+            Log.Comment(CommentType.Info, "服务已经绑定到IP：{0}和端口：{1}。", _ipAddress, _port.ToString());
 
             try
             {
                 listener.Start();
                 Status = Status.Running;
 
-                Log.Comment(CommentType.Info, "Initialize sessions dictionary ...");
+                Log.Comment(CommentType.Info, "初始化Sessions列表。。。");
                 SessionsDictionary = new Dictionary<string, Session>();
 
-                Log.Comment(CommentType.Info, "Initialize controllers informations ...");
-                Assembly assembly = String.IsNullOrEmpty(controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(controllersAssembly);
+                Log.Comment(CommentType.Info, "初始化Controllers信息。。。");
+                Assembly assembly = String.IsNullOrEmpty(_controllersAssembly) ? Assembly.GetCallingAssembly() : Assembly.LoadFrom(_controllersAssembly);
                 if (assembly != null)
                 {
                     ControllersInfos = new Dictionary<string, ControllerReflectionInfo>();
@@ -201,25 +202,25 @@ namespace SiweiSoft.SAPIService.Core
                         {
                             string key = type.Name.Replace("Controller", null).ToUpper();
                             if (ControllersInfos.ContainsKey(key))
-                                Log.Comment(CommentType.Warn, "Duplicated key of controller：{0}, may cause confliction！", key);
+                                Log.Comment(CommentType.Warn, "存在同名的Controller：{0}，可能引起冲突！", key);
                             else
                                 ControllersInfos.Add(key, new ControllerReflectionInfo(type));
                         }
                     }
                 }
-                Log.Comment(CommentType.Info, "With cross origin: " + (withCrossOrigin ? "yes." : "no."));
-                Log.Comment(CommentType.Info, "With cookie: " + (withCookie ? "yes." : "no."));
-                Log.Comment(CommentType.Info, "Service started, waiting connection ...");
+                Log.Comment(CommentType.Info, "是否允许跨源访问：" + (_withCrossOrigin ? "是。" : "否。"));
+                Log.Comment(CommentType.Info, "是否支持cookie：" + (_withCookie ? "是。" : "否。"));
+                Log.Comment(CommentType.Info, "服务已正常启动，等待连接请求。。。");
             }
             catch (HttpListenerException ex)
             {
                 Status = Status.NotInitialized;
-                Log.Comment(CommentType.Error, "Service run into an error: " + ex.Message);
+                Log.Comment(CommentType.Error, "服务运行错误：" + ex.Message);
             }
         }
 
         /// <summary>
-        /// Process service
+        /// 运行服务
         /// </summary>
         public void Process<TSession>() where TSession : Session, new()
         {
@@ -231,22 +232,22 @@ namespace SiweiSoft.SAPIService.Core
                     {
                         HttpListenerContext context = listener.GetContext();
                         if (context != null)
-                            ThreadPool.QueueUserWorkItem(new WaitCallback(this.ConcreteProcess<TSession>), context);
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(ConcreteProcess<TSession>), context);
                     }
                     catch (HttpListenerException)
                     {
-                        Log.Comment(CommentType.Warn, "Service threads stoped.");
+                        Log.Comment(CommentType.Warn, "服务线程已终止。");
                     }
                 }
             }
             else
             {
-                Log.Comment(CommentType.Error, "Service was not initialized or not initialized successfully.");
+                Log.Comment(CommentType.Error, "服务没有初始化或者初始化出错。");
             }
         }
 
         /// <summary>
-        /// Concrete process
+        /// 运行
         /// </summary>
         /// <param name="context"></param>
         private void ConcreteProcess<TSession>(object context) where TSession : Session, new()
@@ -261,14 +262,14 @@ namespace SiweiSoft.SAPIService.Core
             else
             {
                 TSession session = null;
-                if (withCookie)
+                if (_withCookie)
                 {
                     //Set cros options
-                    if (withCrossOrigin)
+                    if (_withCrossOrigin)
                         requestContext.Response.Headers.Add("Access-Control-Allow-Credentials: true");
 
                     //Get the cookie from the request
-                    Cookie cookie = requestContext.Request.Cookies[cookieName];
+                    Cookie cookie = requestContext.Request.Cookies[_cookieName];
                     if (cookie == null)
                     {
                         session = GenerateNewSession<TSession>(requestContext);
@@ -282,8 +283,8 @@ namespace SiweiSoft.SAPIService.Core
                             session = this.GenerateNewSession<TSession>(requestContext, expires: cookie.Expires);
                     }
                 }
-                if (withCrossOrigin)
-                    requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + originHost);
+                if (_withCrossOrigin)
+                    requestContext.Response.Headers.Add("Access-Control-Allow-Origin: " + _originHost);
 
                 SapiRequest request = new SapiRequest(requestContext, session);
                 request.Response();
@@ -291,7 +292,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Stop service
+        /// 停止服务
         /// </summary>
         public void Stop()
         {
@@ -300,24 +301,21 @@ namespace SiweiSoft.SAPIService.Core
             Log.Comment(CommentType.Warn, "Service stoped.");
         }
 
-        /// <summary>
-        /// Generate a new session
-        /// </summary>
-        /// <returns></returns>
-        private TSession GenerateNewSession<TSession>(HttpListenerContext context, DateTime? expires = null) 
+        //生成新的session
+        private TSession GenerateNewSession<TSession>(HttpListenerContext context, DateTime? expires = null)
             where TSession : Session, new()
         {
             string cookieString = Guid.NewGuid().ToString();
-            Cookie cookie = new Cookie(cookieName, cookieString, "/")
+            Cookie cookie = new Cookie(_cookieName, cookieString, "/")
             {
-                Expires = expires ?? DateTime.Now.AddSeconds(cookieExpires)
+                Expires = expires ?? DateTime.Now.AddSeconds(_cookieExpires)
             };
             context.Response.SetCookie(cookie);
             TSession session = new TSession()
             {
                 IsAuthorized = false
             };
-            session.ResetExpireDate(cookieExpires);
+            session.ResetExpireDate(_cookieExpires);
             SessionsDictionary.Add(cookieString, session);
             return session;
         }

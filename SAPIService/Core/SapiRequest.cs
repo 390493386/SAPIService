@@ -12,18 +12,14 @@ namespace SiweiSoft.SAPIService.Core
 {
     internal class SapiRequest
     {
-        /// <summary>
-        /// Http request
-        /// </summary>
+        //Http请求上下文
         private HttpListenerContext context;
 
-        /// <summary>
-        /// Current session
-        /// </summary>
+        //请求session
         private Session session;
 
         /// <summary>
-        /// Constructor
+        /// 构造方法
         /// </summary>
         /// <param name="requestContext"></param>
         /// <param name="session"></param>
@@ -34,7 +30,7 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Response request
+        /// 响应请求
         /// </summary>
         public void Response()
         {
@@ -101,7 +97,7 @@ namespace SiweiSoft.SAPIService.Core
             catch (Exception ex)
             {
                 context.Response.StatusCode = 500;
-                Log.Comment(CommentType.Error, "Unknow exception: " + ex.Message);
+                Log.Comment(CommentType.Error, "未知错误：" + ex.Message);
             }
             finally
             {
@@ -170,9 +166,9 @@ namespace SiweiSoft.SAPIService.Core
         }
 
         /// <summary>
-        /// Initialize controller instance
+        /// 初始化Controller实例
         /// </summary>
-        /// <param name="actionInfo">Action info</param>
+        /// <param name="actionInfo"></param>
         /// <returns></returns>
         private Controller InitializeControllerInstance(out ActionInfo actionInfo)
         {
@@ -195,7 +191,8 @@ namespace SiweiSoft.SAPIService.Core
                 }
             }
             else
-                Log.Comment(CommentType.Error, "Raw url is not in correct format(correct format: /SAPI/ControllerName/ActionName).");
+                Log.Comment(CommentType.Error, "请求URL格式不正确（正确格式：{0}/ControllerName/ActionName）。",
+                    SapiService.RootPath != null ? "/" + SapiService.RootPath : null);
             return controller;
         }
     }

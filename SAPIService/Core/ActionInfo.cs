@@ -10,19 +10,19 @@ namespace SiweiSoft.SAPIService.Core
         public MethodInfo Action { get; set; }
 
         /// <summary>
-        /// Action attribute
+        /// Action特性，是否需要授权
         /// </summary>
         public bool NeedAuthorize { get; set; }
 
         /// <summary>
-        /// Constructor
+        /// 构造方法
         /// </summary>
         public ActionInfo()
         {
         }
 
         /// <summary>
-        /// Constructor
+        /// 构造方法
         /// </summary>
         /// <param name="action"></param>
         /// <param name="needAuthorize"></param>
