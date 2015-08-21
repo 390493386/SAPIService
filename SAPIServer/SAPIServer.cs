@@ -30,25 +30,40 @@ namespace SiweiSoft.SAPIServer
             else
             {
                 this.RefreshSystemConfiguration();
-                if (configuration.ContainsKey("ServerIP") && configuration.ContainsKey("ServerPort"))
-                    serviceInstance = new SapiService(configuration["ServerIP"],
-                        Convert.ToInt32(configuration["ServerPort"]),
-                        originHost: configuration.ContainsKey("OriginHost") && configuration["OriginHost"] != "" ? configuration["OriginHost"] : "*",
-                        fileServerPath: configuration.ContainsKey("FileSavedPath") && configuration["FileSavedPath"] != "" ? configuration["FileSavedPath"] : null,
-                        cookieName: configuration.ContainsKey("CookieName") && configuration["CookieName"] != "" ? configuration["CookieName"] : null,
-                        cookieExpires: configuration.ContainsKey("CookieExpiredTime") && configuration["CookieExpiredTime"] != "" ? Convert.ToInt32(configuration["CookieExpiredTime"]) : 3600);
+                string serverIP = configuration.ContainsKey("ServerIP") ? configuration["ServerIP"] : null;
+                int port = 0;
+                if (configuration.ContainsKey("ServerPort"))
+                    Int32.TryParse(configuration["ServerPort"], out port);
+                string serviceRoot = configuration.ContainsKey("ServiceRoot") ? configuration["ServiceRoot"] : null;
+                string originHost = configuration.ContainsKey("OriginHost") ? configuration["OriginHost"] : null;
+                string fileSavedPath = configuration.ContainsKey("FileSavedPath") ? configuration["FileSavedPath"] : null;
+                string cookieName = configuration.ContainsKey("CookieName") ? configuration["CookieName"] : null;
+                int cookieExpiredTime = 3600;
+                if (configuration.ContainsKey("CookieExpiredTime"))
+                    Int32.TryParse(configuration["CookieExpiredTime"], out cookieExpiredTime);
+                string controllersAssembly = configuration.ContainsKey("ControllersAssembly") ? configuration["ControllersAssembly"] : null;
+
+                //创建服务实例
+                serviceInstance = new SapiService(serverIP, port, rootPath: serviceRoot, originHost: originHost,
+                    fileServerPath: fileSavedPath, cookieName: cookieName, cookieExpires: cookieExpiredTime,
+                    controllersAssembly: controllersAssembly, serverConfig: null);
+                //初始化服务
                 serviceInstance.Initialize();
                 if (serviceInstance.Status == Status.NotInitialized)
                 {
                     Log.Comment(CommentType.Error, "服务启动失败。");
-                    return;
                 }
-                serviceThread = new Thread(serviceInstance.Process<Session>);
-                serviceThread.Start();
-                Log.Comment(CommentType.Info, string.Format("服务正在运行。"));
+                else
+                {
+                    //开辟新的线程运行服务
+                    serviceThread = new Thread(serviceInstance.Process<Session>);
+                    serviceThread.Start();
+                    Log.Comment(CommentType.Info, string.Format("服务正在运行。"));
+                }
             }
         }
 
+        //主线程中在窗口打印日志信息
         private void LogCommentM(CommentType commentType, string comment)
         {
             string mark = null;
@@ -105,15 +120,16 @@ namespace SiweiSoft.SAPIServer
 
         private void SaveConfig_Click(object sender, EventArgs e)
         {
-            string svcSelfStart = selfStartService.Checked ? "1" : "0";
-            string serverIP = localIPAddress.Text;
-            string serverPort = localPort.Text;
-            string root = rootPath.Text;
-            string svcName = serviceName.Text;
-            string ohost = originHost.Text;
-            string filePath = fileSvPath.Text;
-            string cName = cookieName.Text;
-            string cExpires = cookieExpires.Text;
+            string svcSelfStart = c_selfStartService.Checked ? "1" : "0";
+            string serverIP = t_localIPAddress.Text;
+            string serverPort = t_localPort.Text;
+            string root = t_rootPath.Text;
+            string svcName = t_serviceName.Text;
+            string ohost = t_originHost.Text;
+            string filePath = t_fileSvPath.Text;
+            string contAssem = t_controllersAssembly.Text;
+            string cName = t_cookieName.Text;
+            string cExpires = t_cookieExpires.Text;
 
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["SvcSelfStart"].Value = svcSelfStart;
@@ -123,6 +139,7 @@ namespace SiweiSoft.SAPIServer
             config.AppSettings.Settings["ServiceName"].Value = svcName;
             config.AppSettings.Settings["OriginHost"].Value = ohost;
             config.AppSettings.Settings["FileSavedPath"].Value = filePath;
+            config.AppSettings.Settings["ControllersAssembly"].Value = contAssem;
             config.AppSettings.Settings["CookieName"].Value = cName;
             config.AppSettings.Settings["CookieExpiredTime"].Value = cExpires;
             config.Save(ConfigurationSaveMode.Modified);
