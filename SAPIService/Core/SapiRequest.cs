@@ -87,7 +87,7 @@ namespace SiweiSoft.SAPIService.Core
                     }
                     else  //数据请求
                     {
-                        byte[] buffer = Encoding.UTF8.GetBytes(actionResult.GetResultString());
+                        byte[] buffer = actionResult.GetResultBytes();
                         context.Response.ContentLength64 = buffer.Length;
                         context.Response.OutputStream.Write(buffer, 0, buffer.Length);
                         context.Response.StatusCode = 200;
